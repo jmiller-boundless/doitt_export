@@ -1,11 +1,25 @@
 package gov.nyc.doitt.quartz.job;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
+
+
+
+import org.apache.commons.io.FileUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -15,8 +29,10 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
 import com.amazonaws.services.securitytoken.model.Credentials;
@@ -24,16 +40,24 @@ import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 
 import gov.nyc.doitt.service.FileMetadataService;
+import gov.nyc.doitt.service.ProcessShapefile;
 
 
 public class FileMonitorJob implements Job {
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private FileMetadataService fms;
+	@Autowired
+	private ProcessShapefile psf;
 
 	@Value("${s3.bucketname}")
 	private String bucketname;
 	@Value("${s3.filekey}")
 	private String filekey;
+	
+	private AmazonS3 s3client;
+	
+	private Path temppath;
 
 	@Override
 	public void execute(JobExecutionContext jobExecutionContext) {
@@ -50,18 +74,65 @@ public class FileMonitorJob implements Job {
 		//		session_creds.getSessionToken()
 				
 		//		);
-		AmazonS3 s3client = new AmazonS3Client(credentials);
+		s3client = new AmazonS3Client(credentials);
 		ObjectListing ol = s3client.listObjects(bucketname);
 		List<S3ObjectSummary> summaries = ol.getObjectSummaries();
 		Iterator<S3ObjectSummary> it = summaries.iterator();
 		while(it.hasNext()){
 			S3ObjectSummary sos = it.next();
-			System.out.println(sos.getKey());
+			log.info(sos.getKey());
 		}
 
 		ObjectMetadata om = s3client.getObjectMetadata(bucketname, filekey);
 		if(fms.isNewestRev(om.getLastModified(), filekey)){
 			fms.saveRev(om.getLastModified(), filekey);
+			log.info("New file found with last modified "+om.getLastModified());
+			File fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
+			File fieldssplitZip = psf.processZipShape(fieldscombinedZip);
 		}
 	}
+
+	private File downloadS3File(AmazonS3 s3client, String bucketname2, String filekey2) {
+		S3Object object = s3client.getObject(
+                new GetObjectRequest(bucketname2, filekey2));
+		InputStream objectData = object.getObjectContent();
+		try {
+			
+			temppath  = Files.createTempDirectory("tempfiles");
+		} catch (IOException e) {
+			log.error(e.getLocalizedMessage());
+			e.printStackTrace();
+		}
+		if(temppath!=null)
+			return inputStreamToFile(temppath, objectData);
+		else
+			return null;
+	}
+	
+	private File inputStreamToFile(Path temppath, InputStream objectData){
+
+		File targetFile=null;
+		try {
+			targetFile = Files.createTempFile(temppath,"froms3", ".zip").toFile();
+			 
+		    FileUtils.copyInputStreamToFile(objectData, targetFile);
+
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (objectData != null) {
+				try {
+					objectData.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+	    return targetFile;
+	    }
+		
+	
 }
