@@ -47,7 +47,8 @@ import org.springframework.stereotype.Service;
 public class ProcessShapefile {
 	
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-	private final String testdummy="test";
+	private final String fromto="fromTocl";
+	private final String tofrom="toFromcl";
 	public File processZipShape(File shapeZipIn){
 		Path zipfile = null;
 		try {
@@ -64,6 +65,7 @@ public class ProcessShapefile {
             ZipOutputStream zip = new ZipOutputStream(fos);
             zipDirectory(shppath, zip);
             zip.close();
+            System.out.println(shppath);
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -109,9 +111,11 @@ public class ProcessShapefile {
 		try {
 			ShapefileDataStore dataStore = (ShapefileDataStore) factory.createDataStore(params);
 			SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-			builder.add(testdummy, String.class);
+			builder.add(fromto, String.class);
+			builder.add(tofrom, String.class);
             for (AttributeDescriptor descriptor : existingFeatureType.getAttributeDescriptors()) {
-                builder.add(descriptor);
+            	if(!descriptor.getLocalName().equalsIgnoreCase("AllClasses"))
+            		builder.add(descriptor);
             }
             builder.setName(existingFeatureType.getName());
             builder.setCRS(existingFeatureType.getCoordinateReferenceSystem());
@@ -127,13 +131,28 @@ public class ProcessShapefile {
             List<SimpleFeature> features = new ArrayList<SimpleFeature>();
             while (existingfeatures.hasNext()) {
                 SimpleFeature feature = existingfeatures.next();
-                fbuilder.set(testdummy, "meh");
                 for (Property property : feature.getProperties()) {
                     if (property instanceof GeometryAttribute) {
                         fbuilder.set(existingFeatureType.getGeometryDescriptor().getName(),
                                 property.getValue());
                     } else {
-                        fbuilder.set(property.getName(), property.getValue());
+                    	if(!property.getName().toString().equalsIgnoreCase("AllClasses"))
+                    		fbuilder.set(property.getName(), property.getValue());
+                    	else{
+                    		String clazzfromto="";
+                    		String clazztofrom="";
+                    		String[]clazzes = ((String)property.getValue()).split(",");
+                    		if(clazzes.length==1){
+                    			clazzfromto=clazzes[0];
+                    			clazztofrom=clazzes[0];
+                    		}else if(clazzes.length==2){
+                    			clazzfromto=clazzes[0];
+                    			clazztofrom=clazzes[1];
+                    		}
+                    		fbuilder.set(fromto, clazzfromto);
+                    		fbuilder.set(tofrom, clazztofrom);
+                    			
+                    	}
                     }
                 }
                 Feature modifiedFeature = fbuilder.buildFeature(feature.getIdentifier().getID());
