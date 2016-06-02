@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,40 +28,55 @@ import org.springframework.stereotype.Service;
 @Service
 public class GeogigCLIService {
 	@Value(value = "${versionRepoPath}")
-	private String versionRepoPath;
+	public String versionRepoPath;
 	@Value(value = "${fid}")
-	private String fid;
+	public String fid;
 	@Value(value="${geogigCLIExec}")
 	private String geogigCLIExec;
 	
 
-	public String loadFile(File fieldssplitShape) {
+	public String loadFile(File fieldssplitShape, String repoPath, String fid) {
 		String commitid="test";
-		String importprocessresult = importFile(fieldssplitShape.getAbsolutePath(),fid);
-		String addfileprocessresult = addFile();
-		String commitfileprocessresult = commitFile();
+		String importprocessresult = importFile(repoPath,fieldssplitShape.getAbsolutePath(),fid);
+		String addfileprocessresult = addFile(repoPath);
+		String commitfileprocessresult = commitFile(repoPath);
 
 		return commitfileprocessresult;
 	}
-	public String importFile(String shpPath, String fidAttrib){
+	public String getLog(String repoPath,Integer count){
+		List<String>args = Arrays.asList(new String[]{"log","--oneline","\"\"-n "+count+"\"\""});
+		return executeCommand(new File(repoPath),geogigCLIExec,args);
+	}
+	public List<String>getCommitIds(String repoPath,Integer count){
+		List<String>commitids = new ArrayList<String>();
+		String rawlog = getLog(repoPath,count);
+		String[] separated = rawlog.split("\n");
+		for(int i=0;i<separated.length;i++){
+			String[]columns = separated[i].split("\\s+");
+			if(columns.length>0)
+				commitids.add(columns[0]);
+		}
+		return commitids;
+	}
+	public String importFile(String repoPath,String shpPath, String fidAttrib){
 		//geogig shp import ne_10m_rivers_lake_centerlines.shp --fid-attrib dissolve
 		String fidarg = "\"\"--fid-attrib "+fidAttrib+"\"\"";
 		List<String>args = Arrays.asList(new String[]{"shp","import",shpPath,fidarg});
 		//List<String>args = Arrays.asList(new String[]{});
 		//String command = geogigCLIExec+" shp import "+shpPath + " --fid-attrib "+fidAttrib;
-		String stdout = executeCommand(new File(versionRepoPath),geogigCLIExec,args);
+		String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
 		return stdout;
 	}
 
-	public String addFile(){
+	public String addFile(String repoPath){
 		List<String>args = Arrays.asList(new String[]{"add"});
-		return executeCommand(new File(versionRepoPath),geogigCLIExec,args);
+		return executeCommand(new File(repoPath),geogigCLIExec,args);
 	}
 	
-	public String commitFile(){
+	public String commitFile(String repoPath){
 		String fidarg = "\"\"-m \""+new Date().toString()+"\"\"\"";
 		List<String>args = Arrays.asList(new String[]{"commit",fidarg});
-		String stdout =  executeCommand(new File(versionRepoPath),geogigCLIExec,args);
+		String stdout =  executeCommand(new File(repoPath),geogigCLIExec,args);
 		return extractCommitID(stdout);
 	}
 	private String extractCommitID(String commitStdOut){

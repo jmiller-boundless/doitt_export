@@ -93,7 +93,11 @@ public class FileMonitorJob implements Job {
 			log.info("New file found with last modified "+om.getLastModified());
 			File fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
 			File fieldssplitShape = psf.processZipShape(fieldscombinedZip);
-			String commitId = gcs.loadFile(fieldssplitShape);
+			String newcommitId = gcs.loadFile(fieldssplitShape,gcs.versionRepoPath,gcs.fid);
+			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPath,2);
+			if(commitids.size()>1){
+				String previouscommitid = commitids.get(1);
+			}
 		}
 	}
 
