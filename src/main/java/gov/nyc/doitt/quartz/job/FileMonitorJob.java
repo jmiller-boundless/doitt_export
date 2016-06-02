@@ -15,6 +15,7 @@ import java.util.List;
 
 
 
+
 import org.apache.commons.io.FileUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -40,6 +41,7 @@ import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 
 import gov.nyc.doitt.service.FileMetadataService;
+import gov.nyc.doitt.service.GeogigCLIService;
 import gov.nyc.doitt.service.ProcessShapefile;
 
 
@@ -49,6 +51,8 @@ public class FileMonitorJob implements Job {
 	private FileMetadataService fms;
 	@Autowired
 	private ProcessShapefile psf;
+	@Autowired
+	private GeogigCLIService gcs;
 
 	@Value("${s3.bucketname}")
 	private String bucketname;
@@ -88,7 +92,8 @@ public class FileMonitorJob implements Job {
 			fms.saveRev(om.getLastModified(), filekey);
 			log.info("New file found with last modified "+om.getLastModified());
 			File fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
-			File fieldssplitZip = psf.processZipShape(fieldscombinedZip);
+			File fieldssplitShape = psf.processZipShape(fieldscombinedZip);
+			String commitId = gcs.loadFile(fieldssplitShape);
 		}
 	}
 

@@ -51,20 +51,21 @@ public class ProcessShapefile {
 	private final String tofrom="toFromcl";
 	public File processZipShape(File shapeZipIn){
 		Path zipfile = null;
+		File shpfile = null;
 		try {
 			 Path temppath = Files.createTempDirectory("bikepathtemp");
-			 Path temppath2 = Files.createTempDirectory("bikepathtemp2");
+			 //Path temppath2 = Files.createTempDirectory("bikepathtemp2");
 	         File shppath = temppath.toFile();
-	         File shpfile = new File(temppath.toString(), "bikepath.shp");
-	         zipfile = Files.createTempFile(temppath2, "bp", ".zip");
+	         shpfile = new File(temppath.toString(), "bikepath.shp");
+	         //zipfile = Files.createTempFile(temppath2, "bp", ".zip");
 			 FeatureCollection<SimpleFeatureType, SimpleFeature> existing = getExistingFeatureCollection(shapeZipIn);
 
 			SimpleFeatureStore output = getOutputDataStore(shpfile.toURI().toURL(),existing.getSchema(),existing.features());
 			
-			FileOutputStream fos = new FileOutputStream(zipfile.toString());
-            ZipOutputStream zip = new ZipOutputStream(fos);
-            zipDirectory(shppath, zip);
-            zip.close();
+			//FileOutputStream fos = new FileOutputStream(zipfile.toString());
+           // ZipOutputStream zip = new ZipOutputStream(fos);
+            //zipDirectory(shppath, zip);
+           // zip.close();
             System.out.println(shppath);
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -73,7 +74,8 @@ public class ProcessShapefile {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return zipfile.toFile();
+		//return zipfile.toFile();
+		return shpfile;
 			 
 	}
 
