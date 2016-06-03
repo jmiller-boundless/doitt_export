@@ -230,25 +230,5 @@ public class ProcessShapefile {
 	    return featureType;
 	}
 	
-	private void zipDirectory(File shppath, ZipOutputStream zip) throws IOException,
-    FileNotFoundException {
-		File[] shpdirfiles = shppath.listFiles();
-		for (int i = 0; i < shpdirfiles.length; i++) {
-		    byte[] buffer = new byte[1024];
-		    File file = shpdirfiles[i];
-		    ZipEntry e = new ZipEntry(file.getName());
-		    zip.putNextEntry(e);
-		    FileInputStream fis = new FileInputStream(file);
-		    int length;
-		    while ((length = fis.read(buffer)) > 0) {
-		        zip.write(buffer, 0, length);
-		    }
-		    zip.closeEntry();
-		    fis.close();
-		}
 
-		zip.finish();
-		zip.flush();
-		zip.close();
-	}
 }

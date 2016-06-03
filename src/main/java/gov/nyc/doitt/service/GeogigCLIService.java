@@ -3,9 +3,14 @@ package gov.nyc.doitt.service;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -15,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -33,6 +40,8 @@ public class GeogigCLIService {
 	public String fid;
 	@Value(value="${geogigCLIExec}")
 	private String geogigCLIExec;
+	@Value(value="${geogigPath}")
+	public String gigPath;
 	
 
 	public String loadFile(File fieldssplitShape, String repoPath, String fid) {
@@ -71,6 +80,34 @@ public class GeogigCLIService {
 	public String addFile(String repoPath){
 		List<String>args = Arrays.asList(new String[]{"add"});
 		return executeCommand(new File(repoPath),geogigCLIExec,args);
+	}
+	
+	public File getDiffShapefile(String repoPath, String newcommitId,
+			String previouscommitid, String gigPath) {
+		//geogig shp export-diff --nochangetype --overwrite <commit1> <commit2> <path> <shapefile>
+		Path temppath;
+		File shpfile = null;
+		File zipout = null;
+		try {
+			temppath = Files.createTempDirectory("shpdifftemp");
+	        File shppath = temppath.toFile();
+	        shpfile = new File(temppath.toString(), "diff.shp");
+			List<String>args = Arrays.asList(new String[]{"shp","export-diff","--nochangetype","--overwrite",previouscommitid,newcommitId,gigPath,shpfile.getAbsolutePath()});
+			String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
+			Path temppath2 = Files.createTempDirectory("diffziptemp");
+			Path zipfile = Files.createTempFile(temppath2, "diff", ".zip");
+			FileOutputStream fos = new FileOutputStream(zipfile.toString());
+	        ZipOutputStream zip = new ZipOutputStream(fos);
+	         zipDirectory(shppath, zip);
+	        zip.close();
+	        zipout = zipfile.toFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+		return zipout;
 	}
 	
 	public String commitFile(String repoPath){
@@ -140,4 +177,26 @@ public class GeogigCLIService {
 			}
 		}
 	}
+	private void zipDirectory(File shppath, ZipOutputStream zip) throws IOException,
+    FileNotFoundException {
+		File[] shpdirfiles = shppath.listFiles();
+		for (int i = 0; i < shpdirfiles.length; i++) {
+		    byte[] buffer = new byte[1024];
+		    File file = shpdirfiles[i];
+		    ZipEntry e = new ZipEntry(file.getName());
+		    zip.putNextEntry(e);
+		    FileInputStream fis = new FileInputStream(file);
+		    int length;
+		    while ((length = fis.read(buffer)) > 0) {
+		        zip.write(buffer, 0, length);
+		    }
+		    zip.closeEntry();
+		    fis.close();
+		}
+
+		zip.finish();
+		zip.flush();
+		zip.close();
+	}
+
 }

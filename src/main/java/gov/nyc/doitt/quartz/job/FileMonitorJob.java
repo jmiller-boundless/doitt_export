@@ -97,6 +97,7 @@ public class FileMonitorJob implements Job {
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPath,2);
 			if(commitids.size()>1){
 				String previouscommitid = commitids.get(1);
+				File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
 			}
 		}
 	}
