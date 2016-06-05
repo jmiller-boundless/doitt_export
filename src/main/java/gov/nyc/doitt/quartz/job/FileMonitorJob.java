@@ -104,6 +104,8 @@ public class FileMonitorJob implements Job {
 				String previouscommitid = commitids.get(1);
 				File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
 				gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+			}else{
+				//email
 			}
 		}
 	}

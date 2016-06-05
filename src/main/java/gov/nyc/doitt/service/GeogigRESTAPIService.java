@@ -26,6 +26,8 @@ import org.xml.sax.SAXException;
 public class GeogigRESTAPIService {
 	@Value(value = "${geoserverURL}")
 	public String geoserverURL;
+	public final static String geogigPluginRepoPath = "/geogig/repos";
+	public final static String geogigPluginTaskPath = "/geogig/tasks";
 	@Value(value = "${repoID}")
 	public String repoID;
 	@Value(value = "${geogigPath}")
@@ -36,6 +38,10 @@ public class GeogigRESTAPIService {
 	public String author;
 	@Value(value="${email}")
 	public String email;
+	@Value(value="${importMonitorPauseTimeSeconds}")
+	public int importMonitorPauseTimeSeconds;
+	@Value(value="${maxNumberOfImportMonitor}")
+	public int maxNumberOfImportMonitor;
 	
 	public String importZip(File zip,String geoserverURL,String repoID,String fid,String path,String author,String email,String message){
 		String transactionID = startTransaction(geoserverURL,repoID);
@@ -43,7 +49,7 @@ public class GeogigRESTAPIService {
 		MultiValueMap<String, Object> parts = new LinkedMultiValueMap<String, Object>();
 		parts.add("Content-Type", "multipart/form-data");
 		parts.add("fileUpload", resource);
-		String url = geoserverURL+"/"+repoID+"/import.xml?format=zip"
+		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/import.xml?format=zip"
 				+ "&add=true"
 				+ "&fidAttribute="+fid
 				+ "&dest="+path
@@ -56,13 +62,60 @@ public class GeogigRESTAPIService {
 	            new HttpEntity<MultiValueMap<String, Object>>(parts),
 	            String.class).getBody();
 		String jobID = getJobID(response);
-		while(!jobComplete(jobID)){
-			Thread.sleep(10000);
+		int i=0;
+		String status=jobStatus(geoserverURL,jobID);
+		while(!status.equalsIgnoreCase("FINISHED")||i<=maxNumberOfImportMonitor){
+			try {
+				Thread.sleep(importMonitorPauseTimeSeconds*1000);
+				status =jobStatus(geoserverURL,jobID);
+				i++;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			//return last status as email
 		}
 		String transactionEndResponse = endTransaction(geoserverURL,repoID,transactionID);
 		return response;
 	}
 	
+	private String jobStatus(String geoserverURL,String jobID) {
+		//http://localhost:8080/geoserver/geogig/tasks/3.xml
+		//<task>
+		//<id>3</id>
+		//<status>FINISHED</status>
+		//or status could be FAILED
+		//or status could be RUNNING
+		String out = "";
+		String url = geoserverURL+geogigPluginTaskPath+"/"+jobID+".xml";
+		RestTemplate restTemplate = new RestTemplate();
+		String fullresponse = restTemplate.getForObject(url, String.class);
+		DocumentBuilderFactory factory = DocumentBuilderFactory
+				.newInstance();
+		DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+			InputSource is = new InputSource(new StringReader(fullresponse));
+			Document doc = builder.parse(is);
+			doc.getDocumentElement().normalize();
+			NodeList nList = doc.getElementsByTagName("status");
+			if(nList.getLength()>0){
+				out = nList.item(0).getTextContent();;
+			}
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return out;
+	}
+
 	public String getJobID(String response) {
 		String out=null;
 		DocumentBuilderFactory factory = DocumentBuilderFactory
@@ -92,14 +145,14 @@ public class GeogigRESTAPIService {
 
 	public String endTransaction(String geoserverURL, String repoID,
 			String transactionID) {
-		String url = geoserverURL +"/"+repoID+ "/endTransaction?cancel=false&transactionId="+transactionID;
+		String url = geoserverURL +geogigPluginRepoPath+"/"+repoID+ "/endTransaction?cancel=false&transactionId="+transactionID;
 		RestTemplate restTemplate = new RestTemplate();
 		return restTemplate.getForObject(url, String.class);
 	}
 
 	public String startTransaction(String geoserverURL,String repoID){
 		String out=null;
-		String url = geoserverURL +"/"+repoID+ "/beginTransaction";
+		String url = geoserverURL +geogigPluginRepoPath+"/"+repoID+ "/beginTransaction";
 		RestTemplate restTemplate = new RestTemplate();
 		String fullresponse = restTemplate.getForObject(url, String.class);
 		DocumentBuilderFactory factory = DocumentBuilderFactory
