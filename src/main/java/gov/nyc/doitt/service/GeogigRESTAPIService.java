@@ -3,6 +3,7 @@ package gov.nyc.doitt.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -70,7 +71,7 @@ public class GeogigRESTAPIService {
 		String jobID = getJobID(response);
 		int i=0;
 		String status=jobStatus(geoserverURL,jobID);
-		while(!status.equalsIgnoreCase("FINISHED")||i<=maxNumberOfImportMonitor){
+		while(!status.equalsIgnoreCase("FINISHED")&&i<=maxNumberOfImportMonitor){
 			try {
 				Thread.sleep(importMonitorPauseTimeSeconds*1000);
 				status =jobStatus(geoserverURL,jobID);
@@ -84,6 +85,8 @@ public class GeogigRESTAPIService {
 		}
 		if(!status.equalsIgnoreCase("FINISHED"))
 			response = response + "; \n Import process did not complete during the time alloted.  The final status was " + status;
+		else
+			response = "Job "+jobID+ " returned with status of "+status + " at "+new Date();
 		String transactionEndResponse = endTransaction(geoserverURL,repoID,transactionID);
 		return response;
 	}

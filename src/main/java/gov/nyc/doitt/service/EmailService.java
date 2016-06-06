@@ -12,21 +12,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public class EmailService {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private JavaMailSender javaMailSender;
 	@Value(value = "${emailFrom}")
 	public String emailFrom;
-	@Value(value = "${emailList}")
+	@Value("#{'${emailList}'.split(',')}") 
 	public List<String> emailList;
 	public void send(String messageText) {
         MimeMessage mail = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mail, true);
-            helper.setTo((String[]) emailList.toArray());
+            helper.setTo(emailList.toArray(new String[0]));
             helper.setReplyTo(emailFrom);
             helper.setFrom(emailFrom);
             helper.setSubject("Bike Path Shapefile Import Process");
