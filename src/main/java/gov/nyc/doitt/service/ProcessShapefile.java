@@ -69,10 +69,12 @@ public class ProcessShapefile {
             System.out.println(shppath);
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
+			log.error(e.getLocalizedMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		}
 		//return zipfile.toFile();
 		return shpfile;
@@ -96,6 +98,7 @@ public class ProcessShapefile {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		}
 
 
@@ -174,6 +177,7 @@ public class ProcessShapefile {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		}
 		return out;
 	}

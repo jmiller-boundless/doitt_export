@@ -18,6 +18,7 @@ import java.util.List;
 
 
 
+
 import org.apache.commons.io.FileUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -42,6 +43,7 @@ import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 
+import gov.nyc.doitt.service.EmailService;
 import gov.nyc.doitt.service.FileMetadataService;
 import gov.nyc.doitt.service.GeogigCLIService;
 import gov.nyc.doitt.service.GeogigRESTAPIService;
@@ -58,6 +60,8 @@ public class FileMonitorJob implements Job {
 	private GeogigCLIService gcs;
 	@Autowired 
 	private GeogigRESTAPIService gras;
+	@Autowired
+	private EmailService es;
 
 	@Value("${s3.bucketname}")
 	private String bucketname;
@@ -103,9 +107,10 @@ public class FileMonitorJob implements Job {
 			if(commitids.size()>1){
 				String previouscommitid = commitids.get(1);
 				File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
-				gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+				String importout = gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+				es.send(importout);
 			}else{
-				//email
+				es.send("Only " +commitids.size() + " commits found, not enough to run difference");
 			}
 		}
 	}
@@ -120,6 +125,7 @@ public class FileMonitorJob implements Job {
 		} catch (IOException e) {
 			log.error(e.getLocalizedMessage());
 			e.printStackTrace();
+			es.send(e.getLocalizedMessage());
 		}
 		if(temppath!=null)
 			return inputStreamToFile(temppath, objectData);
@@ -139,12 +145,15 @@ public class FileMonitorJob implements Job {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		} finally {
 			if (objectData != null) {
 				try {
 					objectData.close();
 				} catch (IOException e) {
 					e.printStackTrace();
+					es.send(e.getLocalizedMessage());
+					log.error(e.getLocalizedMessage());
 				}
 			}
 

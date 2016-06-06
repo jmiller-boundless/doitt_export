@@ -8,6 +8,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -24,6 +27,9 @@ import org.xml.sax.SAXException;
 
 @Service
 public class GeogigRESTAPIService {
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	@Autowired
+	private EmailService es;
 	@Value(value = "${geoserverURL}")
 	public String geoserverURL;
 	public final static String geogigPluginRepoPath = "/geogig/repos";
@@ -72,10 +78,12 @@ public class GeogigRESTAPIService {
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				log.error(e.getLocalizedMessage());
 			}
 
-			//return last status as email
 		}
+		if(!status.equalsIgnoreCase("FINISHED"))
+			response = response + "; \n Import process did not complete during the time alloted.  The final status was " + status;
 		String transactionEndResponse = endTransaction(geoserverURL,repoID,transactionID);
 		return response;
 	}
@@ -106,12 +114,15 @@ public class GeogigRESTAPIService {
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		}
 		return out;
 	}
@@ -133,12 +144,15 @@ public class GeogigRESTAPIService {
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		}
 		return out;
 	}
@@ -170,12 +184,15 @@ public class GeogigRESTAPIService {
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
 		}
 		return out;
 
