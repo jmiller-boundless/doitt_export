@@ -31,12 +31,15 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GeogigCLIService {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	@Autowired
+	private EmailService es;
 	@Value(value = "${versionRepoPath}")
 	public String versionRepoPath;
 	@Value(value = "${fid}")
@@ -108,6 +111,7 @@ public class GeogigCLIService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 
 
@@ -152,10 +156,12 @@ public class GeogigCLIService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return(outputStream.toString());
 

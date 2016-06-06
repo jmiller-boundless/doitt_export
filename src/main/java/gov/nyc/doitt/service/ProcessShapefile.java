@@ -41,11 +41,13 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProcessShapefile {
-	
+	@Autowired
+	private EmailService es;
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final String fromto="fromTocl";
 	private final String tofrom="toFromcl";
@@ -71,10 +73,12 @@ public class ProcessShapefile {
 			// TODO Auto-generated catch block
 			log.error(e.getLocalizedMessage());
 			e.printStackTrace();
+			es.send(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		//return zipfile.toFile();
 		return shpfile;
@@ -99,6 +103,7 @@ public class ProcessShapefile {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 
 
@@ -130,6 +135,7 @@ public class ProcessShapefile {
             final SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
             if (!(featureSource instanceof SimpleFeatureStore)) {
                 log.error("Could not create feature store.");
+                es.send("Could not create feature store.");
             }
             out = (SimpleFeatureStore) featureSource;
             SimpleFeatureBuilder fbuilder = new SimpleFeatureBuilder(existingFeatureType);
@@ -178,6 +184,7 @@ public class ProcessShapefile {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return out;
 	}

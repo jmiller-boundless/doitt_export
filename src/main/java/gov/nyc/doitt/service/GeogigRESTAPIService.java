@@ -80,6 +80,7 @@ public class GeogigRESTAPIService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				log.error(e.getLocalizedMessage());
+				es.send(e.getLocalizedMessage());
 			}
 
 		}
@@ -118,14 +119,17 @@ public class GeogigRESTAPIService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return out;
 	}
@@ -148,14 +152,17 @@ public class GeogigRESTAPIService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return out;
 	}
@@ -188,14 +195,17 @@ public class GeogigRESTAPIService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return out;
 

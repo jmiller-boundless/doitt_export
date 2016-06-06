@@ -146,6 +146,7 @@ public class FileMonitorJob implements Job {
 		} catch (IOException e) {
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} finally {
 			if (objectData != null) {
 				try {
