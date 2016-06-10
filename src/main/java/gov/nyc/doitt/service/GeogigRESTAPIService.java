@@ -37,7 +37,7 @@ public class GeogigRESTAPIService {
 	public final static String geogigPluginTaskPath = "/geogig/tasks";
 	@Value(value = "${repoID}")
 	public String repoID;
-	@Value(value = "${geogigPath}")
+	@Value(value = "${geoshapePath}")
 	public String path;
 	@Value(value = "${fid}")
 	public String fid;
@@ -52,23 +52,26 @@ public class GeogigRESTAPIService {
 	
 	public String importZip(File zip,String geoserverURL,String repoID,String fid,String path,String author,String email,String message){
 		String transactionID = startTransaction(geoserverURL,repoID);
+		log.info("transactionID: "+transactionID);
 		Resource resource = new FileSystemResource(zip);
 		MultiValueMap<String, Object> parts = new LinkedMultiValueMap<String, Object>();
 		parts.add("Content-Type", "multipart/form-data");
 		parts.add("fileUpload", resource);
 		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/import.xml?format=zip"
-				+ "&add=true"
+				//+ "&alter=true"
 				+ "&fidAttribute="+fid
 				+ "&dest="+path
 				+ "&authorName="+author
 				+ "&authorEmail="+email
 				+ "&message="+message
 				+ "&transactionId="+transactionID;
+		log.info("url: "+url);
 		RestTemplate restTemplate = new RestTemplate();
 		String response =  restTemplate.exchange(url, HttpMethod.POST,
 	            new HttpEntity<MultiValueMap<String, Object>>(parts),
 	            String.class).getBody();
 		String jobID = getJobID(response);
+		log.info("jobID: "+jobID);
 		int i=0;
 		String status=jobStatus(geoserverURL,jobID);
 		while(!status.equalsIgnoreCase("FINISHED")&&i<=maxNumberOfImportMonitor){

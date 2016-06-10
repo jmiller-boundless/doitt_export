@@ -178,6 +178,7 @@ public class ProcessShapefile {
                 transaction.rollback();
             } finally {
                 transaction.close();
+                existingfeatures.close();
             }
 
 		} catch (IOException e) {

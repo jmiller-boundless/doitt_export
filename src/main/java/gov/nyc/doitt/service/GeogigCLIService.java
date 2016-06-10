@@ -59,7 +59,7 @@ public class GeogigCLIService {
 		return commitfileprocessresult;
 	}
 	public String getLog(String repoPath,Integer count){
-		List<String>args = Arrays.asList(new String[]{"log","--oneline","\"\"-n "+count+"\"\""});
+		List<String>args = Arrays.asList(new String[]{"log","--oneline","-n",count.toString()});
 		return executeCommand(new File(repoPath),geogigCLIExec,args);
 	}
 	public List<String>getCommitIds(String repoPath,Integer count){
@@ -75,8 +75,10 @@ public class GeogigCLIService {
 	}
 	public String importFile(String repoPath,String shpPath, String fidAttrib){
 		//geogig shp import ne_10m_rivers_lake_centerlines.shp --fid-attrib dissolve
-		String fidarg = "\"\"--fid-attrib "+fidAttrib+"\"\"";
-		List<String>args = Arrays.asList(new String[]{"shp","import",shpPath,fidarg});
+		//String fidarg = "\"\"--fid-attrib "+fidAttrib+"\"\"";
+		String fidarg = "--fid-attrib";
+		String fidarg2 = fidAttrib;
+		List<String>args = Arrays.asList(new String[]{"shp","import",shpPath,fidarg,fidarg2});
 		//List<String>args = Arrays.asList(new String[]{});
 		//String command = geogigCLIExec+" shp import "+shpPath + " --fid-attrib "+fidAttrib;
 		String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
@@ -119,8 +121,9 @@ public class GeogigCLIService {
 	}
 	
 	public String commitFile(String repoPath){
-		String fidarg = "\"\"-m \""+new Date().toString()+"\"\"\"";
-		List<String>args = Arrays.asList(new String[]{"commit",fidarg});
+		String fidarg = "-m";
+		String msg = "\"\"" + new Date() + "\"\"";
+		List<String>args = Arrays.asList(new String[]{"commit",fidarg, msg});
 		String stdout =  executeCommand(new File(repoPath),geogigCLIExec,args);
 		return extractCommitID(stdout);
 	}
@@ -142,7 +145,7 @@ public class GeogigCLIService {
 			cmdLine.addArgument(it.next(),false);
 		}
 		DefaultExecutor executor = new DefaultExecutor();
-		//executor.setExitValue(1);
+		//executor.setExitValue(255);
 		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
 		executor.setWorkingDirectory(processPath);
 		ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
@@ -156,7 +159,9 @@ public class GeogigCLIService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
-			es.send(e.getLocalizedMessage());
+			log.error(String.valueOf(e.getExitValue()));
+			log.error(outputStream.toString());
+			es.send(e.getLocalizedMessage()+outputStream.toString());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
