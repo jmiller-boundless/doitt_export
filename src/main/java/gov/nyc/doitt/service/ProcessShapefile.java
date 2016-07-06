@@ -33,16 +33,26 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 @Service
 public class ProcessShapefile {
@@ -123,14 +133,18 @@ public class ProcessShapefile {
 			SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
 			builder.add(fromto, String.class);
 			builder.add(tofrom, String.class);
-            for (AttributeDescriptor descriptor : existingFeatureType.getAttributeDescriptors()) {
+            CoordinateReferenceSystem worldCRS = getTargetCRS();
+            CoordinateReferenceSystem dataCRS = existingFeatureType.getCoordinateReferenceSystem();
+            SimpleFeatureType reprojFeatureType = SimpleFeatureTypeBuilder.retype(existingFeatureType, worldCRS);
+            for (AttributeDescriptor descriptor : reprojFeatureType.getAttributeDescriptors()) {
             	if(!descriptor.getLocalName().equalsIgnoreCase("AllClasses"))
             		builder.add(descriptor);
             }
-            builder.setName(existingFeatureType.getName());
-            builder.setCRS(existingFeatureType.getCoordinateReferenceSystem());
-            existingFeatureType = builder.buildFeatureType();
-			dataStore.createSchema(existingFeatureType);
+
+            builder.setName(reprojFeatureType.getName());
+            builder.setCRS(reprojFeatureType.getCoordinateReferenceSystem());
+            reprojFeatureType = builder.buildFeatureType();
+			dataStore.createSchema(reprojFeatureType);
 			final String typeName = dataStore.getTypeNames()[0];
             final SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
             if (!(featureSource instanceof SimpleFeatureStore)) {
@@ -138,14 +152,19 @@ public class ProcessShapefile {
                 es.send("Could not create feature store.");
             }
             out = (SimpleFeatureStore) featureSource;
-            SimpleFeatureBuilder fbuilder = new SimpleFeatureBuilder(existingFeatureType);
+
+            SimpleFeatureBuilder fbuilder = new SimpleFeatureBuilder(reprojFeatureType);
+            boolean lenient = true;
+            MathTransform transform = CRS.findMathTransform(dataCRS, worldCRS, lenient);
             List<SimpleFeature> features = new ArrayList<SimpleFeature>();
             while (existingfeatures.hasNext()) {
                 SimpleFeature feature = existingfeatures.next();
                 for (Property property : feature.getProperties()) {
                     if (property instanceof GeometryAttribute) {
+                    	Geometry geometry = (Geometry) property.getValue();
+                    	Geometry geometry2 = JTS.transform(geometry, transform);
                         fbuilder.set(existingFeatureType.getGeometryDescriptor().getName(),
-                                property.getValue());
+                                geometry2);
                     } else {
                     	if(!property.getName().toString().equalsIgnoreCase("AllClasses"))
                     		fbuilder.set(property.getName(), property.getValue());
@@ -169,7 +188,7 @@ public class ProcessShapefile {
                 Feature modifiedFeature = fbuilder.buildFeature(feature.getIdentifier().getID());
                 features.add((SimpleFeature) modifiedFeature);
             }
-            SimpleFeatureCollection collection = new ListFeatureCollection(existingFeatureType, features);
+            SimpleFeatureCollection collection = new ListFeatureCollection(reprojFeatureType, features);
             try {
                 out.addFeatures(collection);
                 transaction.commit();
@@ -186,11 +205,37 @@ public class ProcessShapefile {
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
 			es.send(e.getLocalizedMessage());
+		} catch (FactoryException e) {
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
+		} catch (MismatchedDimensionException e) {
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
+		} catch (TransformException e) {
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return out;
 	}
 	
-	 private URL unzipShapeFile(File zipFile) throws IOException {
+	 private CoordinateReferenceSystem getTargetCRS() {
+		 CoordinateReferenceSystem crsout = null;
+		try {
+			crsout=CRS.decode("EPSG:4326");
+		} catch (NoSuchAuthorityCodeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FactoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return crsout;
+	}
+
+	private URL unzipShapeFile(File zipFile) throws IOException {
          URL out = null;
          byte[] buffer = new byte[1024];
          ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BikelaneExportApplication {
 
 	public static void main(String[] args) {
+		System.setProperty("org.geotools.referencing.forceXY", "true");
 		SpringApplication.run(BikelaneExportApplication.class, args);
 	}
 }

@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -122,7 +123,7 @@ public class GeogigCLIService {
 	
 	public String commitFile(String repoPath){
 		String fidarg = "-m";
-		String msg = "\"\"" + new Date() + "\"\"";
+		String msg = new SimpleDateFormat("MM:dd:yyyy:HH:mm:ss").format(new Date());
 		List<String>args = Arrays.asList(new String[]{"commit",fidarg, msg});
 		String stdout =  executeCommand(new File(repoPath),geogigCLIExec,args);
 		return extractCommitID(stdout);

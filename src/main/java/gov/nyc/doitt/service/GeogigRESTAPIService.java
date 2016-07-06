@@ -58,7 +58,7 @@ public class GeogigRESTAPIService {
 		parts.add("Content-Type", "multipart/form-data");
 		parts.add("fileUpload", resource);
 		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/import.xml?format=zip"
-				//+ "&alter=true"
+				+ "&add=true"
 				+ "&fidAttribute="+fid
 				+ "&dest="+path
 				+ "&authorName="+author
