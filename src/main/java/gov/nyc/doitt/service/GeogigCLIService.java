@@ -53,7 +53,7 @@ public class GeogigCLIService {
 
 	public String loadFile(File fieldssplitShape, String repoPath, String fid) {
 		String commitid="test";
-		String importprocessresult = importFile(repoPath,fieldssplitShape.getAbsolutePath(),fid);
+		String importprocessresult = importFile(repoPath,gigPath,fieldssplitShape.getAbsolutePath(),fid);
 		String addfileprocessresult = addFile(repoPath);
 		String commitfileprocessresult = commitFile(repoPath);
 
@@ -74,11 +74,15 @@ public class GeogigCLIService {
 		}
 		return commitids;
 	}
-	public String importFile(String repoPath,String shpPath, String fidAttrib){
+	public String importFile(String repoPath,String destPath, String shpPath, String fidAttrib){
 		//geogig shp import ne_10m_rivers_lake_centerlines.shp --fid-attrib dissolve
 		//String fidarg = "\"\"--fid-attrib "+fidAttrib+"\"\"";
 		String fidarg = "--fid-attrib";
 		String fidarg2 = fidAttrib;
+		String destpatharg = "-d";
+		String destpatharg2 = destPath;
+		//String forcefeature = "--force-featuretype";
+		String forcefeature = "--alter";
 		List<String>args = Arrays.asList(new String[]{"shp","import",shpPath,fidarg,fidarg2});
 		//List<String>args = Arrays.asList(new String[]{});
 		//String command = geogigCLIExec+" shp import "+shpPath + " --fid-attrib "+fidAttrib;
@@ -100,7 +104,7 @@ public class GeogigCLIService {
 		try {
 			temppath = Files.createTempDirectory("shpdifftemp");
 	        File shppath = temppath.toFile();
-	        shpfile = new File(temppath.toString(), "diff.shp");
+	        shpfile = new File(temppath.toString(), "bikepath.shp");
 			List<String>args = Arrays.asList(new String[]{"shp","export-diff","--nochangetype","--overwrite",previouscommitid,newcommitId,gigPath,shpfile.getAbsolutePath()});
 			String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
 			Path temppath2 = Files.createTempDirectory("diffziptemp");

@@ -60,7 +60,7 @@ public class GeogigRESTAPIService {
 		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/import.xml?format=zip"
 				+ "&add=true"
 				+ "&fidAttribute="+fid
-				+ "&dest="+path
+				//+ "&dest="+path
 				+ "&authorName="+author
 				+ "&authorEmail="+email
 				+ "&message="+message
