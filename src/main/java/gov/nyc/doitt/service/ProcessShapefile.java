@@ -61,6 +61,10 @@ public class ProcessShapefile {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final String fromto="fromTocl";
 	private final String tofrom="toFromcl";
+	private final String fromto_nodeid = "fromToNodeID";
+	private final String tofrom_nodeid = "toFromNodeID";
+	private final String fromto_hr = "fromToHR";
+	private final String tofrom_hr = "toFromHR";
 	public File processZipShape(File shapeZipIn){
 		Path zipfile = null;
 		File shpfile = null;
@@ -133,6 +137,10 @@ public class ProcessShapefile {
 			SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
 			builder.add(fromto, String.class);
 			builder.add(tofrom, String.class);
+			builder.add(fromto_nodeid, String.class);
+			builder.add(tofrom_nodeid, String.class);
+			builder.add(fromto_hr, String.class);
+			builder.add(tofrom_hr, String.class);
             CoordinateReferenceSystem worldCRS = getTargetCRS();
             CoordinateReferenceSystem dataCRS = existingFeatureType.getCoordinateReferenceSystem();
             SimpleFeatureType reprojFeatureType = SimpleFeatureTypeBuilder.retype(existingFeatureType, worldCRS);
@@ -166,9 +174,9 @@ public class ProcessShapefile {
                         fbuilder.set(existingFeatureType.getGeometryDescriptor().getName(),
                                 geometry2);
                     } else {
-                    	if(!property.getName().toString().equalsIgnoreCase("AllClasses"))
-                    		fbuilder.set(property.getName(), property.getValue());
-                    	else{
+                    	
+                    		
+                    	if(property.getName().toString().equalsIgnoreCase("AllClasses")){
                     		String clazzfromto="";
                     		String clazztofrom="";
                     		String[]clazzes = ((String)property.getValue()).split(",");
@@ -182,9 +190,12 @@ public class ProcessShapefile {
                     		fbuilder.set(fromto, clazzfromto);
                     		fbuilder.set(tofrom, clazztofrom);
                     			
+                    	}else{
+                    		fbuilder.set(property.getName(), property.getValue());
                     	}
                     }
-                }
+                }//end copying attributes from existing feature
+                populateIntersection(feature,fbuilder);
                 Feature modifiedFeature = fbuilder.buildFeature(feature.getIdentifier().getID());
                 features.add((SimpleFeature) modifiedFeature);
             }
@@ -221,7 +232,17 @@ public class ProcessShapefile {
 		return out;
 	}
 	
-	 private CoordinateReferenceSystem getTargetCRS() {
+	 private void populateIntersection(SimpleFeature existingFeature,
+			SimpleFeatureBuilder fbuilder) {
+		 System.out.println(existingFeature.getAttribute("SegID"));
+		fbuilder.set(fromto_nodeid, "test1");
+		fbuilder.set(tofrom_nodeid, "test2");
+		fbuilder.set(fromto_hr, "test3");
+		fbuilder.set(tofrom_hr, "test4");
+		
+	}
+
+	private CoordinateReferenceSystem getTargetCRS() {
 		 CoordinateReferenceSystem crsout = null;
 		try {
 			crsout=CRS.decode("EPSG:4326");
