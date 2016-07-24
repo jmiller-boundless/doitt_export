@@ -1,5 +1,8 @@
 package gov.nyc.doitt.service;
 
+import gov.nyc.doitt.model.NodeStreetName;
+import gov.nyc.doitt.model.repository.NodeIntersectionDAO;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -58,11 +62,14 @@ import com.vividsolutions.jts.geom.Geometry;
 public class ProcessShapefile {
 	@Autowired
 	private EmailService es;
+	@Autowired
+	private NodeIntersectionDAO nid;
+	
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final String fromto="fromTocl";
 	private final String tofrom="toFromcl";
-	private final String fromto_nodeid = "fromToNodeID";
-	private final String tofrom_nodeid = "toFromNodeID";
+	private final String fromto_nodeid = "fromToNode";
+	private final String tofrom_nodeid = "toFromNode";
 	private final String fromto_hr = "fromToHR";
 	private final String tofrom_hr = "toFromHR";
 	public File processZipShape(File shapeZipIn){
@@ -234,12 +241,35 @@ public class ProcessShapefile {
 	
 	 private void populateIntersection(SimpleFeature existingFeature,
 			SimpleFeatureBuilder fbuilder) {
-		 System.out.println(existingFeature.getAttribute("SegID"));
-		fbuilder.set(fromto_nodeid, "test1");
-		fbuilder.set(tofrom_nodeid, "test2");
-		fbuilder.set(fromto_hr, "test3");
-		fbuilder.set(tofrom_hr, "test4");
-		
+		 System.out.println(existingFeature.getAttribute("SegmentID"));
+		 if(existingFeature.getAttribute("SegmentID")!=null){
+		 String segid = (String)existingFeature.getAttribute("SegmentID");
+		List<NodeStreetName>fromnodestreetnames =  nid.getNodeStreetnameBySegmentIDFrom(segid);
+		List<NodeStreetName>tonodestreetnames =  nid.getNodeStreetnameBySegmentIDTo(segid);
+		Iterator<NodeStreetName> itfrom = fromnodestreetnames.iterator();
+		Iterator<NodeStreetName >itto = tonodestreetnames.iterator();
+		String hrfrom = "";
+		while(itfrom.hasNext()){
+			NodeStreetName nsnfrom = itfrom.next();
+			fbuilder.set(fromto_nodeid, nsnfrom.getId().getNodeid());
+			//String delim = "_";
+			//if(hrfrom.length()<1)
+			//	delim="";
+			hrfrom = hrfrom+ nsnfrom.getId().getStname();
+		}
+		fbuilder.set(fromto_hr, hrfrom);
+		String hrto = "";
+		while(itto.hasNext()){
+			NodeStreetName nsnto = itto.next();			
+			fbuilder.set(tofrom_nodeid, nsnto.getId().getNodeid());
+			//String delim = "_";
+			//if(hrto.length()<1)
+			//	delim="";
+			hrto = hrto+ nsnto.getId().getStname();
+		}
+		fbuilder.set(tofrom_hr, hrto);
+
+		 }
 	}
 
 	private CoordinateReferenceSystem getTargetCRS() {
