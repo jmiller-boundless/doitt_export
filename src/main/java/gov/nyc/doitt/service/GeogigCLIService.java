@@ -43,8 +43,12 @@ public class GeogigCLIService {
 	private EmailService es;
 	@Value(value = "${versionRepoPath}")
 	public String versionRepoPath;
+	@Value(value = "${versionRepoPathBuilding}")
+	public String versionRepoPathBuilding;
 	@Value(value = "${fid}")
 	public String fid;
+	@Value(value = "${fidBuilding}")
+	public String fidBuilding;
 	@Value(value="${geogigCLIExec}")
 	private String geogigCLIExec;
 	@Value(value="${geogigPath}")

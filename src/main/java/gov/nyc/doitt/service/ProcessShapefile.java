@@ -72,18 +72,18 @@ public class ProcessShapefile {
 	private final String tofrom_nodeid = "toFromNode";
 	private final String fromto_hr = "fromToHR";
 	private final String tofrom_hr = "toFromHR";
-	public File processZipShape(File shapeZipIn){
+	public File processZipShape(File shapeZipIn, String tempDirName, String filename,Boolean fieldSplit){
 		Path zipfile = null;
 		File shpfile = null;
 		try {
-			 Path temppath = Files.createTempDirectory("bikepathtemp");
+			 Path temppath = Files.createTempDirectory(tempDirName);
 			 //Path temppath2 = Files.createTempDirectory("bikepathtemp2");
 	         File shppath = temppath.toFile();
-	         shpfile = new File(temppath.toString(), "bikepath.shp");
+	         shpfile = new File(temppath.toString(), filename);
 	         //zipfile = Files.createTempFile(temppath2, "bp", ".zip");
 			 FeatureCollection<SimpleFeatureType, SimpleFeature> existing = getExistingFeatureCollection(shapeZipIn);
 
-			SimpleFeatureStore output = getOutputDataStore(shpfile.toURI().toURL(),existing.getSchema(),existing.features());
+			SimpleFeatureStore output = getOutputDataStore(shpfile.toURI().toURL(),existing.getSchema(),existing.features(),fieldSplit);
 			
 			//FileOutputStream fos = new FileOutputStream(zipfile.toString());
            // ZipOutputStream zip = new ZipOutputStream(fos);
@@ -131,7 +131,7 @@ public class ProcessShapefile {
 		return out;
 	}
 	
-	private SimpleFeatureStore getOutputDataStore(URL outurl,SimpleFeatureType existingFeatureType, FeatureIterator<SimpleFeature>existingfeatures){
+	private SimpleFeatureStore getOutputDataStore(URL outurl,SimpleFeatureType existingFeatureType, FeatureIterator<SimpleFeature>existingfeatures,Boolean fieldSplit){
 		final Transaction transaction = new DefaultTransaction("create");
 		SimpleFeatureStore out =null;
 		final HashMap<String, Serializable> params = new HashMap<>(3);
@@ -142,12 +142,14 @@ public class ProcessShapefile {
 		try {
 			ShapefileDataStore dataStore = (ShapefileDataStore) factory.createDataStore(params);
 			SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-			builder.add(fromto, String.class);
-			builder.add(tofrom, String.class);
-			builder.add(fromto_nodeid, String.class);
-			builder.add(tofrom_nodeid, String.class);
-			builder.add(fromto_hr, String.class);
-			builder.add(tofrom_hr, String.class);
+			if(fieldSplit){
+				builder.add(fromto, String.class);
+				builder.add(tofrom, String.class);
+				builder.add(fromto_nodeid, String.class);
+				builder.add(tofrom_nodeid, String.class);
+				builder.add(fromto_hr, String.class);
+				builder.add(tofrom_hr, String.class);
+			}
             CoordinateReferenceSystem worldCRS = getTargetCRS();
             CoordinateReferenceSystem dataCRS = existingFeatureType.getCoordinateReferenceSystem();
             SimpleFeatureType reprojFeatureType = SimpleFeatureTypeBuilder.retype(existingFeatureType, worldCRS);
@@ -202,7 +204,8 @@ public class ProcessShapefile {
                     	}
                     }
                 }//end copying attributes from existing feature
-                populateIntersection(feature,fbuilder);
+                if(fieldSplit)
+                	populateIntersection(feature,fbuilder);
                 Feature modifiedFeature = fbuilder.buildFeature(feature.getIdentifier().getID());
                 features.add((SimpleFeature) modifiedFeature);
             }

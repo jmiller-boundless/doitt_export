@@ -37,10 +37,16 @@ public class GeogigRESTAPIService {
 	public final static String geogigPluginTaskPath = "/geogig/tasks";
 	@Value(value = "${repoID}")
 	public String repoID;
+	@Value(value = "${repoIDBuilding}")
+	public String repoIDBuilding;
 	@Value(value = "${geoshapePath}")
 	public String path;
+	@Value(value = "${geoshapePathBuilding}")
+	public String pathBuilding;
 	@Value(value = "${fid}")
 	public String fid;
+	@Value(value = "${fidBuilding}")
+	public String fidBuilding;
 	@Value(value="${author}")
 	public String author;
 	@Value(value="${email}")

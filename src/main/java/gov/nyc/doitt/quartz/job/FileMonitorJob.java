@@ -68,6 +68,9 @@ public class FileMonitorJob implements Job {
 	@Value("${s3.filekey}")
 	private String filekey;
 	
+	@Value("${s3.filekeyBuilding}")
+	private String filekeyBuilding;
+	
 	private AmazonS3 s3client;
 	
 	private Path temppath;
@@ -96,12 +99,13 @@ public class FileMonitorJob implements Job {
 			log.info(sos.getKey());
 		}
 
+		//bikepath find and process start
 		ObjectMetadata om = s3client.getObjectMetadata(bucketname, filekey);
 		if(fms.isNewestRev(om.getLastModified(), filekey)){
 			fms.saveRev(om.getLastModified(), filekey);
 			log.info("New file found with last modified "+om.getLastModified());
 			File fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
-			File fieldssplitShape = psf.processZipShape(fieldscombinedZip);
+			File fieldssplitShape = psf.processZipShape(fieldscombinedZip,"bikepathtemp","bikepath.shp",true);
 			String newcommitId = gcs.loadFile(fieldssplitShape,gcs.versionRepoPath,gcs.fid);
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPath,2);
 			if(commitids.size()>1){
@@ -113,6 +117,28 @@ public class FileMonitorJob implements Job {
 				es.send("Only " +commitids.size() + " commits found, not enough to run difference");
 			}
 		}
+		//bikepath find and process end
+		
+		//building find and process start
+		ObjectMetadata ombuilding = s3client.getObjectMetadata(bucketname, filekeyBuilding);
+		if(fms.isNewestRev(ombuilding.getLastModified(), filekeyBuilding)){
+			fms.saveRev(ombuilding.getLastModified(), filekeyBuilding);
+			log.info("New building file found with last modified "+ombuilding.getLastModified());
+			File buildingZip = downloadS3File(s3client,bucketname,filekeyBuilding);
+			File buildingReprojShape = psf.processZipShape(buildingZip,"buildingtemp","building.shp",false);
+			String newcommitId = gcs.loadFile(buildingReprojShape,gcs.versionRepoPathBuilding,gcs.fidBuilding);
+			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPathBuilding,2);
+			if(commitids.size()>1){
+				String previouscommitid = commitids.get(1);
+				File diffout = gcs.getDiffShapefile(gcs.versionRepoPathBuilding,newcommitId,previouscommitid,gcs.gigPath);
+				String importout = gras.importZip(diffout,gras.geoserverURL,gras.repoIDBuilding,gras.fidBuilding,gras.pathBuilding,gras.author,gras.email,"building_diff");
+				es.send(importout);
+			}else{
+				es.send("Only " +commitids.size() + " building commits found, not enough to run difference");
+			}
+		}
+		//building find and process end
+		
 	}
 
 	private File downloadS3File(AmazonS3 s3client, String bucketname2, String filekey2) {
