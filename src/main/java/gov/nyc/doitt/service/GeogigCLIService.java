@@ -53,6 +53,8 @@ public class GeogigCLIService {
 	private String geogigCLIExec;
 	@Value(value="${geogigPath}")
 	public String gigPath;
+	@Value(value="${geogigPathBuilding}")
+	public String gigPathBuilding;
 	
 
 	public String loadFile(File fieldssplitShape, String repoPath, String fid) {
@@ -100,7 +102,7 @@ public class GeogigCLIService {
 	}
 	
 	public File getDiffShapefile(String repoPath, String newcommitId,
-			String previouscommitid, String gigPath) {
+			String previouscommitid, String gigPath, String filename) {
 		//geogig shp export-diff --nochangetype --overwrite <commit1> <commit2> <path> <shapefile>
 		Path temppath;
 		File shpfile = null;
@@ -108,7 +110,7 @@ public class GeogigCLIService {
 		try {
 			temppath = Files.createTempDirectory("shpdifftemp");
 	        File shppath = temppath.toFile();
-	        shpfile = new File(temppath.toString(), "bikepath.shp");
+	        shpfile = new File(temppath.toString(), filename+".shp");
 			List<String>args = Arrays.asList(new String[]{"shp","export-diff","--nochangetype","--overwrite",previouscommitid,newcommitId,gigPath,shpfile.getAbsolutePath()});
 			String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
 			Path temppath2 = Files.createTempDirectory("diffziptemp");

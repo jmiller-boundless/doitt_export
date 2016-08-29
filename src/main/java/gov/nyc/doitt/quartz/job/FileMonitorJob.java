@@ -110,7 +110,7 @@ public class FileMonitorJob implements Job {
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPath,2);
 			if(commitids.size()>1){
 				String previouscommitid = commitids.get(1);
-				File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
+				File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath,"bikepath");
 				String importout = gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
 				es.send(importout);
 			}else{
@@ -130,7 +130,7 @@ public class FileMonitorJob implements Job {
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPathBuilding,2);
 			if(commitids.size()>1){
 				String previouscommitid = commitids.get(1);
-				File diffout = gcs.getDiffShapefile(gcs.versionRepoPathBuilding,newcommitId,previouscommitid,gcs.gigPath);
+				File diffout = gcs.getDiffShapefile(gcs.versionRepoPathBuilding,newcommitId,previouscommitid,gcs.gigPathBuilding,"building");
 				String importout = gras.importZip(diffout,gras.geoserverURL,gras.repoIDBuilding,gras.fidBuilding,gras.pathBuilding,gras.author,gras.email,"building_diff");
 				es.send(importout);
 			}else{
