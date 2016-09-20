@@ -65,8 +65,17 @@ public class GeogigRESTAPIService {
 		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/remove?path="+treeName+"/"+fid+"&transactionId="+transactionID;
 		String response = restTemplate.getForObject(url, String.class);
 		log.info(response);
+		commit(geoserverURL,repoID,transactionID);
 		String transactionEndResponse = endTransaction(geoserverURL,repoID,transactionID);
 		log.info(transactionEndResponse);
+		return response;
+	}
+	
+	public String commit(String geoserverURL, String repoID, String transactionID){
+		RestTemplate restTemplate = new RestTemplate();
+		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/commit?authorName=nyc&authorEmail=nycadmin@nyc.gov&message=removing&all=true"+"&transactionId="+transactionID;
+		String response = restTemplate.getForObject(url, String.class);
+		log.info(response);
 		return response;
 	}
 	
