@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -55,6 +57,27 @@ public class GeogigRESTAPIService {
 	public int importMonitorPauseTimeSeconds;
 	@Value(value="${maxNumberOfImportMonitor}")
 	public int maxNumberOfImportMonitor;
+	
+	public String removeFeature(String geoserverURL,String repoID,String treeName, String fid){
+		String transactionID = startTransaction(geoserverURL,repoID);
+		log.info("transactionID: "+transactionID);
+		RestTemplate restTemplate = new RestTemplate();
+		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/remove?path="+treeName+"/"+fid+"&transactionId="+transactionID;
+		String response = restTemplate.getForObject(url, String.class);
+		log.info(response);
+		String transactionEndResponse = endTransaction(geoserverURL,repoID,transactionID);
+		log.info(transactionEndResponse);
+		return response;
+	}
+	
+	public void removeFeatures(List<String> removed,String geoserverURL,String repoID,String treeName) {
+		Iterator<String>it = removed.iterator();
+		while(it.hasNext()){
+			String fid = it.next();
+			removeFeature(geoserverURL,repoID,treeName,fid);
+		}
+		
+	}
 	
 	public String importZip(File zip,String geoserverURL,String repoID,String fid,String path,String author,String email,String message){
 		String transactionID = startTransaction(geoserverURL,repoID);
@@ -219,5 +242,7 @@ public class GeogigRESTAPIService {
 		return out;
 
 	}
+
+
 
 }

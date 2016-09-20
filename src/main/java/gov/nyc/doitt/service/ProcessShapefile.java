@@ -131,6 +131,35 @@ public class ProcessShapefile {
 		return out;
 	}
 	
+	
+	public int featureCount(File diffout) {
+		int out=0;
+
+		try {
+			URL url = diffout.toURI().toURL();
+			final HashMap<String, Serializable> params = new HashMap<>(3);
+			final ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
+			FeatureCollection<SimpleFeatureType, SimpleFeature> fcs = null;
+			params.put(ShapefileDataStoreFactory.URLP.key, url);
+			params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);
+			params.put(ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX.key, Boolean.FALSE);
+			ShapefileDataStore dataStore = (ShapefileDataStore) factory.createDataStore(params);
+			String typeName = dataStore.getTypeNames()[0];
+			FeatureSource<SimpleFeatureType, SimpleFeature> source= dataStore
+			        .getFeatureSource(typeName);
+			fcs = source.getFeatures();
+			out = fcs.size();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return out;
+	}
+	
+	
 	private SimpleFeatureStore getOutputDataStore(URL outurl,SimpleFeatureType existingFeatureType, FeatureIterator<SimpleFeature>existingfeatures,Boolean fieldSplit){
 		final Transaction transaction = new DefaultTransaction("create");
 		SimpleFeatureStore out =null;

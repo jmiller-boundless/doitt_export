@@ -101,6 +101,25 @@ public class GeogigCLIService {
 		return executeCommand(new File(repoPath),geogigCLIExec,args);
 	}
 	
+	public List<String>getRemovedFeatureIds(String repoPath,String newcommitId,String previouscommitid,String gigPath){
+		List<String> out = new ArrayList<String>();
+		List<String>args = Arrays.asList(new String[]{"diff","--summary",previouscommitid,newcommitId});
+		String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
+		String lines[] = stdout.split("\\r?\\n");
+		for(int i=0;i<lines.length;i++){
+			String line = lines[i];
+			int featurePathIndex = line.indexOf(gigPath);
+			if(line.substring(featurePathIndex-3, featurePathIndex-2).equals("R")){
+				int featureIDIndex = featurePathIndex + gigPath.length() + 1;
+				String featureID = line.substring(featureIDIndex); 
+				out.add(featureID);
+			}
+		}
+		
+		return out;
+		
+	}
+	
 	public File getDiffShapefile(String repoPath, String newcommitId,
 			String previouscommitid, String gigPath, String filename) {
 		//geogig shp export-diff --nochangetype --overwrite <commit1> <commit2> <path> <shapefile>
@@ -113,13 +132,17 @@ public class GeogigCLIService {
 	        shpfile = new File(temppath.toString(), filename+".shp");
 			List<String>args = Arrays.asList(new String[]{"shp","export-diff","--nochangetype","--overwrite",previouscommitid,newcommitId,gigPath,shpfile.getAbsolutePath()});
 			String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
-			Path temppath2 = Files.createTempDirectory("diffziptemp");
-			Path zipfile = Files.createTempFile(temppath2, "diff", ".zip");
-			FileOutputStream fos = new FileOutputStream(zipfile.toString());
-	        ZipOutputStream zip = new ZipOutputStream(fos);
-	         zipDirectory(shppath, zip);
-	        zip.close();
-	        zipout = zipfile.toFile();
+			ProcessShapefile psf = new ProcessShapefile();
+			int count=psf.featureCount(shpfile);
+			if(count>0){
+				Path temppath2 = Files.createTempDirectory("diffziptemp");
+				Path zipfile = Files.createTempFile(temppath2, "diff", ".zip");
+				FileOutputStream fos = new FileOutputStream(zipfile.toString());
+		        ZipOutputStream zip = new ZipOutputStream(fos);
+		         zipDirectory(shppath, zip);
+		        zip.close();
+		        zipout = zipfile.toFile();
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -130,6 +153,8 @@ public class GeogigCLIService {
 
 		return zipout;
 	}
+	
+
 	
 	public String commitFile(String repoPath){
 		String fidarg = "-m";
@@ -226,5 +251,6 @@ public class GeogigCLIService {
 		zip.flush();
 		zip.close();
 	}
+
 
 }

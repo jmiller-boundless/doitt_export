@@ -19,6 +19,7 @@ import java.util.List;
 
 
 
+
 import org.apache.commons.io.FileUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -110,8 +111,16 @@ public class FileMonitorJob implements Job {
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPath,2);
 			if(commitids.size()>1){
 				String previouscommitid = commitids.get(1);
+				List<String>removed = gcs.getRemovedFeatureIds(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
+				gras.removeFeatures(removed,gras.geoserverURL,gras.repoID,gras.path);
 				File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath,"bikepath");
-				String importout = gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+				String importout="";
+				if(diffout!=null){
+					importout = gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+				}
+				else{
+					importout = "No bikepath feature changes found or only features removed";
+				}
 				es.send(importout);
 			}else{
 				es.send("Only " +commitids.size() + " commits found, not enough to run difference");
@@ -130,8 +139,15 @@ public class FileMonitorJob implements Job {
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPathBuilding,2);
 			if(commitids.size()>1){
 				String previouscommitid = commitids.get(1);
+				List<String>removed = gcs.getRemovedFeatureIds(gcs.versionRepoPathBuilding,newcommitId,previouscommitid,gcs.gigPathBuilding);
+				gras.removeFeatures(removed,gras.geoserverURL,gras.repoIDBuilding,gras.pathBuilding);
 				File diffout = gcs.getDiffShapefile(gcs.versionRepoPathBuilding,newcommitId,previouscommitid,gcs.gigPathBuilding,"building");
-				String importout = gras.importZip(diffout,gras.geoserverURL,gras.repoIDBuilding,gras.fidBuilding,gras.pathBuilding,gras.author,gras.email,"building_diff");
+				String importout="";
+				if(diffout!=null){
+					importout = gras.importZip(diffout,gras.geoserverURL,gras.repoIDBuilding,gras.fidBuilding,gras.pathBuilding,gras.author,gras.email,"building_diff");
+				}else{
+					importout = "No building feature changes found or only features removed";
+				}
 				es.send(importout);
 			}else{
 				es.send("Only " +commitids.size() + " building commits found, not enough to run difference");
