@@ -110,18 +110,22 @@ public class FileMonitorJob implements Job {
 			String newcommitId = gcs.loadFile(fieldssplitShape,gcs.versionRepoPath,gcs.fid);
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPath,2);
 			if(commitids.size()>1){
-				String previouscommitid = commitids.get(1);
-				List<String>removed = gcs.getRemovedFeatureIds(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
-				gras.removeFeatures(removed,gras.geoserverURL,gras.repoID,gras.path);
-				File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath,"bikepath");
-				String importout="";
-				if(diffout!=null){
-					importout = gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+				try{
+					String previouscommitid = commitids.get(1);
+					List<String>removed = gcs.getRemovedFeatureIds(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
+					gras.removeFeatures(removed,gras.geoserverURL,gras.repoID,gras.path);
+					File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath,"bikepath");
+					String importout="";
+					if(diffout!=null){
+						importout = gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+					}
+					else{
+						importout = "No bikepath feature changes found or only features removed";
+					}
+					es.send(importout);
+				}finally{
+					gcs.deleteLock(gcs.versionRepoPath + File.separator+".geogig"+File.separator+"objects"+File.separator+"je.lck");
 				}
-				else{
-					importout = "No bikepath feature changes found or only features removed";
-				}
-				es.send(importout);
 			}else{
 				es.send("Only " +commitids.size() + " commits found, not enough to run difference");
 			}

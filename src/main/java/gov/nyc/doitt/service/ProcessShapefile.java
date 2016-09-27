@@ -100,6 +100,10 @@ public class ProcessShapefile {
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
 			es.send(e.getLocalizedMessage());
+		}catch (Exception e){
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		//return zipfile.toFile();
 		return shpfile;
@@ -122,6 +126,10 @@ public class ProcessShapefile {
 			out = source.getFeatures();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
+		}catch (Exception e){
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
 			es.send(e.getLocalizedMessage());
@@ -152,9 +160,17 @@ public class ProcessShapefile {
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
+		}catch (Exception e){
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return out;
 	}
@@ -311,9 +327,17 @@ public class ProcessShapefile {
 		} catch (NoSuchAuthorityCodeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		} catch (FactoryException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
+		}catch (Exception e){
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 		}
 		return crsout;
 	}
