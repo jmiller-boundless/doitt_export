@@ -260,11 +260,15 @@ public class GeogigCLIService {
     			System.out.println(file.getName() + " is deleted!");
     		}else{
     			System.out.println("Delete operation is failed.");
+    			es.send("Delete lock operation failed: "+path);
+
     		}
 
     	}catch(Exception e){
 
-    		e.printStackTrace();
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
 
     	}
 		
