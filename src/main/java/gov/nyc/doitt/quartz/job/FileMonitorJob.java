@@ -79,6 +79,7 @@ public class FileMonitorJob implements Job {
 	@Override
 	public void execute(JobExecutionContext jobExecutionContext) {
 		System.out.println("Quartz Job");
+		log.info("repo id from gras get: "+gras.getRepoID());
 		//AWSSecurityTokenServiceClient sts_client = new AWSSecurityTokenServiceClient();
 		//GetSessionTokenRequest session_token_request = new GetSessionTokenRequest();
 		//session_token_request.setRequestCredentials(credentials);
@@ -107,24 +108,24 @@ public class FileMonitorJob implements Job {
 			log.info("New file found with last modified "+om.getLastModified());
 			File fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
 			File fieldssplitShape = psf.processZipShape(fieldscombinedZip,"bikepathtemp","bikepath.shp",true);
-			String newcommitId = gcs.loadFile(fieldssplitShape,gcs.versionRepoPath,gcs.fid);
-			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPath,2);
+			String newcommitId = gcs.loadFile(fieldssplitShape,gcs.getVersionRepoPath(),gcs.fid);
+			List<String>commitids = gcs.getCommitIds(gcs.getVersionRepoPath(),2);
 			if(commitids.size()>1){
 				try{
 					String previouscommitid = commitids.get(1);
-					List<String>removed = gcs.getRemovedFeatureIds(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath);
-					gras.removeFeatures(removed,gras.geoserverURL,gras.repoID,gras.path);
-					File diffout = gcs.getDiffShapefile(gcs.versionRepoPath,newcommitId,previouscommitid,gcs.gigPath,"bikepath");
+					List<String>removed = gcs.getRemovedFeatureIds(gcs.getVersionRepoPath(),newcommitId,previouscommitid,gcs.gigPath);
+					gras.removeFeatures(removed,gras.geoserverURL,gras.getRepoID(),gras.path);
+					File diffout = gcs.getDiffShapefile(gcs.getVersionRepoPath(),newcommitId,previouscommitid,gcs.gigPath,"bikepath");
 					String importout="";
 					if(diffout!=null){
-						importout = gras.importZip(diffout,gras.geoserverURL,gras.repoID,gras.fid,gras.path,gras.author,gras.email,"diff");
+						importout = gras.importZip(diffout,gras.geoserverURL,gras.getRepoID(),gras.fid,gras.path,gras.author,gras.email,"diff");
 					}
 					else{
 						importout = "No bikepath feature changes found or only features removed";
 					}
 					es.send(importout);
 				}finally{
-					gcs.deleteLock(gcs.versionRepoPath + File.separator+".geogig"+File.separator+"objects"+File.separator+"je.lck");
+					gcs.deleteLock(gcs.getVersionRepoPath() + File.separator+".geogig"+File.separator+"objects"+File.separator+"je.lck");
 				}
 			}else{
 				es.send("Only " +commitids.size() + " commits found, not enough to run difference");

@@ -42,7 +42,7 @@ public class GeogigCLIService {
 	@Autowired
 	private EmailService es;
 	@Value(value = "${versionRepoPath}")
-	public String versionRepoPath;
+	private String versionRepoPath;
 	@Value(value = "${versionRepoPathBuilding}")
 	public String versionRepoPathBuilding;
 	@Value(value = "${fid}")
@@ -272,6 +272,12 @@ public class GeogigCLIService {
 
     	}
 		
+	}
+	public String getVersionRepoPath() {
+		return versionRepoPath;
+	}
+	public void setVersionRepoPath(String versionRepoPath) {
+		this.versionRepoPath = versionRepoPath;
 	}
 
 

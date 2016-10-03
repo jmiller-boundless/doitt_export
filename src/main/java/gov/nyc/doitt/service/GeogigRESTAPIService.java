@@ -37,8 +37,8 @@ public class GeogigRESTAPIService {
 	public String geoserverURL;
 	public final static String geogigPluginRepoPath = "/geogig/repos";
 	public final static String geogigPluginTaskPath = "/geogig/tasks";
-	@Value(value = "${repoID}")
-	public String repoID;
+	@Value(value = "${repoIDBikePath}")
+	private String repoID;
 	@Value(value = "${repoIDBuilding}")
 	public String repoIDBuilding;
 	@Value(value = "${geoshapePath}")
@@ -88,15 +88,16 @@ public class GeogigRESTAPIService {
 		
 	}
 	
-	public String importZip(File zip,String geoserverURL,String repoID,String fid,String path,String author,String email,String message){
+	public String importZip(File zip,String geoserverURL,String repoID2,String fid,String path,String author,String email,String message){
 		String transactionID = startTransaction(geoserverURL,repoID);
 		log.info("transactionID: "+transactionID);
 		Resource resource = new FileSystemResource(zip);
 		MultiValueMap<String, Object> parts = new LinkedMultiValueMap<String, Object>();
 		parts.add("Content-Type", "multipart/form-data");
 		parts.add("fileUpload", resource);
-		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID+"/import.xml?format=zip"
+		String url = geoserverURL+geogigPluginRepoPath+"/"+repoID2+"/import.xml?format=zip"
 				+ "&add=true"
+				//+ "&forceFeatureType=true"
 				+ "&fidAttribute="+fid
 				//+ "&dest="+path
 				+ "&authorName="+author
@@ -104,6 +105,8 @@ public class GeogigRESTAPIService {
 				+ "&message="+message
 				+ "&transactionId="+transactionID;
 		log.info("url: "+url);
+		log.info("repoID2:"+repoID2);
+		log.info("repoID:"+repoID);
 		RestTemplate restTemplate = new RestTemplate();
 		String response =  restTemplate.exchange(url, HttpMethod.POST,
 	            new HttpEntity<MultiValueMap<String, Object>>(parts),
@@ -250,6 +253,14 @@ public class GeogigRESTAPIService {
 		}
 		return out;
 
+	}
+
+	public String getRepoID() {
+		return repoID;
+	}
+
+	public void setRepoID(String repoID) {
+		this.repoID = repoID;
 	}
 
 

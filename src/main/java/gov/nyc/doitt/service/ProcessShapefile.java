@@ -291,31 +291,31 @@ public class ProcessShapefile {
 			SimpleFeatureBuilder fbuilder) {
 		 System.out.println(existingFeature.getAttribute("SegmentID"));
 		 if(existingFeature.getAttribute("SegmentID")!=null){
-		 String segid = (String)existingFeature.getAttribute("SegmentID");
-		List<NodeStreetName>fromnodestreetnames =  nid.getNodeStreetnameBySegmentIDFrom(segid);
-		List<NodeStreetName>tonodestreetnames =  nid.getNodeStreetnameBySegmentIDTo(segid);
-		Iterator<NodeStreetName> itfrom = fromnodestreetnames.iterator();
-		Iterator<NodeStreetName >itto = tonodestreetnames.iterator();
-		String hrfrom = "";
-		while(itfrom.hasNext()){
-			NodeStreetName nsnfrom = itfrom.next();
-			fbuilder.set(fromto_nodeid, nsnfrom.getId().getNodeid());
-			//String delim = "_";
-			//if(hrfrom.length()<1)
-			//	delim="";
-			hrfrom = hrfrom+ nsnfrom.getId().getStname();
-		}
-		fbuilder.set(fromto_hr, hrfrom);
-		String hrto = "";
-		while(itto.hasNext()){
-			NodeStreetName nsnto = itto.next();			
-			fbuilder.set(tofrom_nodeid, nsnto.getId().getNodeid());
-			//String delim = "_";
-			//if(hrto.length()<1)
-			//	delim="";
-			hrto = hrto+ nsnto.getId().getStname();
-		}
-		fbuilder.set(tofrom_hr, hrto);
+			 String segid = (String)existingFeature.getAttribute("SegmentID");
+			List<NodeStreetName>fromnodestreetnames =  nid.getNodeStreetnameBySegmentIDFrom(segid);
+			List<NodeStreetName>tonodestreetnames =  nid.getNodeStreetnameBySegmentIDTo(segid);
+			Iterator<NodeStreetName> itfrom = fromnodestreetnames.iterator();
+			Iterator<NodeStreetName >itto = tonodestreetnames.iterator();
+			String hrfrom = "";
+			while(itfrom.hasNext()){
+				NodeStreetName nsnfrom = itfrom.next();
+				fbuilder.set(fromto_nodeid, nsnfrom.getId().getNodeid());
+				String delim = "&";
+				if(hrfrom.length()<1)
+					delim="";
+				hrfrom = hrfrom+delim+nsnfrom.getId().getStname();
+			}
+			fbuilder.set(fromto_hr, hrfrom);
+			String hrto = "";
+			while(itto.hasNext()){
+				NodeStreetName nsnto = itto.next();			
+				fbuilder.set(tofrom_nodeid, nsnto.getId().getNodeid());
+				String delim = "&";
+				if(hrto.length()<1)
+					delim="";
+				hrto = hrto+delim+nsnto.getId().getStname();
+			}
+			fbuilder.set(tofrom_hr, hrto);
 
 		 }
 	}
