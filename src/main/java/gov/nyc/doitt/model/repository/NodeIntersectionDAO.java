@@ -27,22 +27,23 @@ public class NodeIntersectionDAO {
     	
     }
     @Cacheable("from")
-    public List<NodeStreetName> getNodeStreetnameBySegmentIDFrom(String segmentID){
+    public List<String> getNodeStreetnameBySegmentIDFrom(String nodeIDFrom){
     	Query q = em.createNativeQuery(
-        	    "select n.nodeid,n.stname from lion_line l, node_stname n where n.nodeid=trim(Leading '0' from l.nodeidfrom) and l.segmentID=:segmentid",
-                NodeStreetName.class);
+        	    //"select n.nodeid,n.stname from lion_line l, node_stname n where n.nodeid=trim(Leading '0' from l.nodeidfrom) and l.segmentID=:segmentid",
+    			"select n.stname from node_stname n where n.nodeid=trim(Leading '0' from :nodeIDFrom)",
+                String.class);
 
-        q.setParameter("segmentid", segmentID);
+        q.setParameter("nodeIDFrom", nodeIDFrom);
         return q.getResultList();
     	
     }
     @Cacheable("to")
-    public List<NodeStreetName> getNodeStreetnameBySegmentIDTo(String segmentID){
+    public List<String> getNodeStreetnameBySegmentIDTo(String nodeIDTo){
     	Query q = em.createNativeQuery(
-        	    "select n.nodeid,n.stname from lion_line l, node_stname n where n.nodeid=trim(Leading '0' from l.nodeidto) and l.segmentID=:segmentid",
-                NodeStreetName.class);
+        	    "select n.stname from node_stname n where n.nodeid=trim(Leading '0' from :nodeIDTo)",
+                String.class);
 
-        q.setParameter("segmentid", segmentID);
+        q.setParameter("nodeIDTo", nodeIDTo);
         return q.getResultList();
     	
     }

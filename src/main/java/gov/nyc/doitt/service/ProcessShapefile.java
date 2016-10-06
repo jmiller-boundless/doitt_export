@@ -68,8 +68,8 @@ public class ProcessShapefile {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final String fromto="fromTocl";
 	private final String tofrom="toFromcl";
-	private final String fromto_nodeid = "fromToNode";
-	private final String tofrom_nodeid = "toFromNode";
+	//private final String fromto_nodeid = "fromToNode";
+	//private final String tofrom_nodeid = "toFromNode";
 	private final String fromto_hr = "fromToHR";
 	private final String tofrom_hr = "toFromHR";
 	public File processZipShape(File shapeZipIn, String tempDirName, String filename,Boolean fieldSplit){
@@ -190,8 +190,8 @@ public class ProcessShapefile {
 			if(fieldSplit){
 				builder.add(fromto, String.class);
 				builder.add(tofrom, String.class);
-				builder.add(fromto_nodeid, String.class);
-				builder.add(tofrom_nodeid, String.class);
+				//builder.add(fromto_nodeid, String.class);
+				//builder.add(tofrom_nodeid, String.class);
 				builder.add(fromto_hr, String.class);
 				builder.add(tofrom_hr, String.class);
 			}
@@ -199,7 +199,7 @@ public class ProcessShapefile {
             CoordinateReferenceSystem dataCRS = existingFeatureType.getCoordinateReferenceSystem();
             SimpleFeatureType reprojFeatureType = SimpleFeatureTypeBuilder.retype(existingFeatureType, worldCRS);
             for (AttributeDescriptor descriptor : reprojFeatureType.getAttributeDescriptors()) {
-            	if(!descriptor.getLocalName().equalsIgnoreCase("AllClasses"))
+            	if(!descriptor.getLocalName().equalsIgnoreCase("BikeLane"))
             		builder.add(descriptor);
             }
 
@@ -230,19 +230,20 @@ public class ProcessShapefile {
                     } else {
                     	
                     		
-                    	if(property.getName().toString().equalsIgnoreCase("AllClasses")){
-                    		String clazzfromto="";
+                    	if(property.getName().toString().equalsIgnoreCase("BikeLane")){
+                    		/* String clazzfromto="";
                     		String clazztofrom="";
-                    		String[]clazzes = ((String)property.getValue()).split(",");
+                   		String[]clazzes = ((String)property.getValue()).split(",");
                     		if(clazzes.length==1){
                     			clazzfromto=clazzes[0];
                     			clazztofrom=clazzes[0];
                     		}else if(clazzes.length==2){
                     			clazzfromto=clazzes[0];
                     			clazztofrom=clazzes[1];
-                    		}
-                    		fbuilder.set(fromto, clazzfromto);
-                    		fbuilder.set(tofrom, clazztofrom);
+                    		}*/
+                    		String[]clazzes = getPathClasses((String)property.getValue());
+                    		fbuilder.set(fromto, clazzes[0]);
+                    		fbuilder.set(tofrom, clazzes[1]);
                     			
                     	}else{
                     		fbuilder.set(property.getName(), property.getValue());
@@ -287,37 +288,79 @@ public class ProcessShapefile {
 		return out;
 	}
 	
-	 private void populateIntersection(SimpleFeature existingFeature,
+	 private String[] getPathClasses(String value) {
+		
+		String[]out = new String[2];
+		 try{
+			 Integer clazz = Integer.valueOf(value);
+			 if(clazz==1){
+				 out[0]="1";
+				 out[1]="1";
+			 }else if (clazz==2){
+				 out[0]="2";
+				 out[1]="2";
+			 }else if (clazz==3){
+				 out[0]="3";
+				 out[1]="3";
+			 }else if (clazz==4){
+				 out[0]="4";
+				 out[1]="4";
+			 }else if (clazz==5){
+				 out[0]="1";
+				 out[1]="2";
+			 }else if (clazz==6){
+				 out[0]="2";
+				 out[1]="3";
+			 }else if (clazz==7){
+				 out[0]="7";
+				 out[1]="7";
+			 }
+		 }catch(NumberFormatException nfe){
+			 out[0]="";
+			 out[1]="";
+		 }
+		
+		return out;
+	}
+
+	private void populateIntersection(SimpleFeature existingFeature,
 			SimpleFeatureBuilder fbuilder) {
-		 System.out.println(existingFeature.getAttribute("SegmentID"));
-		 if(existingFeature.getAttribute("SegmentID")!=null){
-			 String segid = (String)existingFeature.getAttribute("SegmentID");
-			List<NodeStreetName>fromnodestreetnames =  nid.getNodeStreetnameBySegmentIDFrom(segid);
-			List<NodeStreetName>tonodestreetnames =  nid.getNodeStreetnameBySegmentIDTo(segid);
-			Iterator<NodeStreetName> itfrom = fromnodestreetnames.iterator();
-			Iterator<NodeStreetName >itto = tonodestreetnames.iterator();
+		 //System.out.println(existingFeature.getAttribute("SegmentID"));
+		 //if(existingFeature.getAttribute("SegmentID")!=null){
+			//String segid = (String)existingFeature.getAttribute("SegmentID");
+		if(existingFeature.getAttribute("BikeLane")!=null&&!((String)existingFeature.getAttribute("BikeLane")).equals("")){
+			String NodeIDFrom="";
+			String NodeIDTo="";
+			if(existingFeature.getAttribute("NodeIDFrom")!=null)
+			 	NodeIDFrom = (String) existingFeature.getAttribute("NodeIDFrom");
+			if(existingFeature.getAttribute("NodeIDTo")!=null)
+		 	NodeIDTo = (String) existingFeature.getAttribute("NodeIDTo");
+			List<String>fromnodestreetnames =  nid.getNodeStreetnameBySegmentIDFrom(NodeIDFrom);
+			List<String>tonodestreetnames =  nid.getNodeStreetnameBySegmentIDTo(NodeIDTo);
+			Iterator<String> itfrom = fromnodestreetnames.iterator();
+			Iterator<String >itto = tonodestreetnames.iterator();
 			String hrfrom = "";
 			while(itfrom.hasNext()){
-				NodeStreetName nsnfrom = itfrom.next();
-				fbuilder.set(fromto_nodeid, nsnfrom.getId().getNodeid());
+				String nsnfrom = itfrom.next();
+				//fbuilder.set(fromto_nodeid, nsnfrom.getId().getNodeid());
 				String delim = "&";
 				if(hrfrom.length()<1)
 					delim="";
-				hrfrom = hrfrom+delim+nsnfrom.getId().getStname();
+				hrfrom = hrfrom+delim+nsnfrom;
 			}
 			fbuilder.set(fromto_hr, hrfrom);
 			String hrto = "";
 			while(itto.hasNext()){
-				NodeStreetName nsnto = itto.next();			
-				fbuilder.set(tofrom_nodeid, nsnto.getId().getNodeid());
+				String nsnto = itto.next();			
+				//fbuilder.set(tofrom_nodeid, nsnto);
 				String delim = "&";
 				if(hrto.length()<1)
 					delim="";
-				hrto = hrto+delim+nsnto.getId().getStname();
+				hrto = hrto+delim+nsnto;
 			}
 			fbuilder.set(tofrom_hr, hrto);
-
-		 }
+		}
+		// }
 	}
 
 	private CoordinateReferenceSystem getTargetCRS() {
