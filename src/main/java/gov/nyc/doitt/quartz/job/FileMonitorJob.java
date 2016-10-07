@@ -107,7 +107,7 @@ public class FileMonitorJob implements Job {
 			fms.saveRev(om.getLastModified(), filekey);
 			log.info("New file found with last modified "+om.getLastModified());
 			File fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
-			File fieldssplitShape = psf.processZipShape(fieldscombinedZip,"bikepathtemp","bikepath.shp",true);
+			File fieldssplitShape = psf.processZipShape(fieldscombinedZip,"bikepathtemp","bikepath.shp",true,false);
 			String newcommitId = gcs.loadFile(fieldssplitShape,gcs.getVersionRepoPath(),gcs.fid);
 			List<String>commitids = gcs.getCommitIds(gcs.getVersionRepoPath(),2);
 			if(commitids.size()>1){
@@ -139,7 +139,7 @@ public class FileMonitorJob implements Job {
 			fms.saveRev(ombuilding.getLastModified(), filekeyBuilding);
 			log.info("New building file found with last modified "+ombuilding.getLastModified());
 			File buildingZip = downloadS3File(s3client,bucketname,filekeyBuilding);
-			File buildingReprojShape = psf.processZipShape(buildingZip,"buildingtemp","building.shp",false);
+			File buildingReprojShape = psf.processZipShape(buildingZip,"buildingtemp","building.shp",false,false);
 			String newcommitId = gcs.loadFile(buildingReprojShape,gcs.versionRepoPathBuilding,gcs.fidBuilding);
 			List<String>commitids = gcs.getCommitIds(gcs.versionRepoPathBuilding,2);
 			if(commitids.size()>1){

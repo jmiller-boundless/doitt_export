@@ -72,7 +72,7 @@ public class ProcessShapefile {
 	//private final String tofrom_nodeid = "toFromNode";
 	private final String fromto_hr = "fromToHR";
 	private final String tofrom_hr = "toFromHR";
-	public File processZipShape(File shapeZipIn, String tempDirName, String filename,Boolean fieldSplit){
+	public File processZipShape(File shapeZipIn, String tempDirName, String filename,Boolean fieldsplit, Boolean populateintersection){
 		Path zipfile = null;
 		File shpfile = null;
 		try {
@@ -83,7 +83,7 @@ public class ProcessShapefile {
 	         //zipfile = Files.createTempFile(temppath2, "bp", ".zip");
 			 FeatureCollection<SimpleFeatureType, SimpleFeature> existing = getExistingFeatureCollection(shapeZipIn);
 
-			SimpleFeatureStore output = getOutputDataStore(shpfile.toURI().toURL(),existing.getSchema(),existing.features(),fieldSplit);
+			SimpleFeatureStore output = getOutputDataStore(shpfile.toURI().toURL(),existing.getSchema(),existing.features(),fieldsplit,populateintersection);
 			
 			//FileOutputStream fos = new FileOutputStream(zipfile.toString());
            // ZipOutputStream zip = new ZipOutputStream(fos);
@@ -176,7 +176,7 @@ public class ProcessShapefile {
 	}
 	
 	
-	private SimpleFeatureStore getOutputDataStore(URL outurl,SimpleFeatureType existingFeatureType, FeatureIterator<SimpleFeature>existingfeatures,Boolean fieldSplit){
+	private SimpleFeatureStore getOutputDataStore(URL outurl,SimpleFeatureType existingFeatureType, FeatureIterator<SimpleFeature>existingfeatures,Boolean fieldSplit, Boolean popintersection){
 		final Transaction transaction = new DefaultTransaction("create");
 		SimpleFeatureStore out =null;
 		final HashMap<String, Serializable> params = new HashMap<>(3);
@@ -192,8 +192,8 @@ public class ProcessShapefile {
 				builder.add(tofrom, String.class);
 				//builder.add(fromto_nodeid, String.class);
 				//builder.add(tofrom_nodeid, String.class);
-				builder.add(fromto_hr, String.class);
-				builder.add(tofrom_hr, String.class);
+				//builder.add(fromto_hr, String.class);
+				//builder.add(tofrom_hr, String.class);
 			}
             CoordinateReferenceSystem worldCRS = getTargetCRS();
             CoordinateReferenceSystem dataCRS = existingFeatureType.getCoordinateReferenceSystem();
@@ -250,7 +250,7 @@ public class ProcessShapefile {
                     	}
                     }
                 }//end copying attributes from existing feature
-                if(fieldSplit)
+                if(popintersection)
                 	populateIntersection(feature,fbuilder);
                 Feature modifiedFeature = fbuilder.buildFeature(feature.getIdentifier().getID());
                 features.add((SimpleFeature) modifiedFeature);
