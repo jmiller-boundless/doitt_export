@@ -241,9 +241,11 @@ public class ProcessShapefile {
                     			clazzfromto=clazzes[0];
                     			clazztofrom=clazzes[1];
                     		}*/
-                    		String[]clazzes = getPathClasses((String)property.getValue());
-                    		fbuilder.set(fromto, clazzes[0]);
-                    		fbuilder.set(tofrom, clazzes[1]);
+                    		if(property.getValue()!=null){
+	                    		String[]clazzes = getPathClasses((String)property.getValue());
+	                    		fbuilder.set(fromto, clazzes[0]);
+	                    		fbuilder.set(tofrom, clazzes[1]);
+                    		}
                     			
                     	}else{
                     		fbuilder.set(property.getName(), property.getValue());
