@@ -314,6 +314,18 @@ public class ProcessShapefile {
 			 }else if (clazz==7){
 				 out[0]="7";
 				 out[1]="7";
+			 }else if (clazz==8){
+				 out[0]="1";
+				 out[1]="3";
+			 }else if (clazz==9){
+				 out[0]="2";
+				 out[1]="1";
+			 }else if (clazz==10){
+				 out[0]="3";
+				 out[1]="1";
+			 }else if (clazz==11){
+				 out[0]="3";
+				 out[1]="2";
 			 }
 		 }catch(NumberFormatException nfe){
 			 out[0]="";
