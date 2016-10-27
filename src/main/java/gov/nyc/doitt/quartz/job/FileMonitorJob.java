@@ -125,7 +125,7 @@ public class FileMonitorJob implements Job {
 					}
 					es.send(importout);
 				}finally{
-					gcs.deleteLock(gcs.getVersionRepoPath() + File.separator+".geogig"+File.separator+"objects"+File.separator+"je.lck");
+					//gcs.deleteLock(gcs.getVersionRepoPath() + File.separator+".geogig"+File.separator+"objects"+File.separator+"je.lck");
 				}
 			}else{
 				es.send("Only " +commitids.size() + " commits found, not enough to run difference");

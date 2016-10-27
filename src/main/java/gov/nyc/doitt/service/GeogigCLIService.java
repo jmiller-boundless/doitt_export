@@ -67,7 +67,7 @@ public class GeogigCLIService {
 	}
 	public String getLog(String repoPath,Integer count){
 		List<String>args = Arrays.asList(new String[]{"log","--oneline","-n",count.toString()});
-		return executeCommand(new File(repoPath),geogigCLIExec,args);
+		return executeCommand(geogigCLIExec,args,repoPath);
 	}
 	public List<String>getCommitIds(String repoPath,Integer count){
 		List<String>commitids = new ArrayList<String>();
@@ -92,19 +92,19 @@ public class GeogigCLIService {
 		List<String>args = Arrays.asList(new String[]{"shp","import",shpPath,fidarg,fidarg2});
 		//List<String>args = Arrays.asList(new String[]{});
 		//String command = geogigCLIExec+" shp import "+shpPath + " --fid-attrib "+fidAttrib;
-		String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
+		String stdout = executeCommand(geogigCLIExec,args,repoPath);
 		return stdout;
 	}
 
 	public String addFile(String repoPath){
 		List<String>args = Arrays.asList(new String[]{"add"});
-		return executeCommand(new File(repoPath),geogigCLIExec,args);
+		return executeCommand(geogigCLIExec,args,repoPath);
 	}
 	
 	public List<String>getRemovedFeatureIds(String repoPath,String newcommitId,String previouscommitid,String gigPath){
 		List<String> out = new ArrayList<String>();
 		List<String>args = Arrays.asList(new String[]{"diff","--summary",previouscommitid,newcommitId});
-		String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
+		String stdout = executeCommand(geogigCLIExec,args,repoPath);
 		String lines[] = stdout.split("\\r?\\n");
 		for(int i=0;i<lines.length;i++){
 			String line = lines[i];
@@ -131,7 +131,7 @@ public class GeogigCLIService {
 	        File shppath = temppath.toFile();
 	        shpfile = new File(temppath.toString(), filename+".shp");
 			List<String>args = Arrays.asList(new String[]{"shp","export-diff","--nochangetype","--overwrite",previouscommitid,newcommitId,gigPath,shpfile.getAbsolutePath()});
-			String stdout = executeCommand(new File(repoPath),geogigCLIExec,args);
+			String stdout = executeCommand(geogigCLIExec,args,repoPath);
 			ProcessShapefile psf = new ProcessShapefile();
 			int count=psf.featureCount(shpfile);
 			if(count>0){
@@ -160,7 +160,7 @@ public class GeogigCLIService {
 		String fidarg = "-m";
 		String msg = new SimpleDateFormat("MM:dd:yyyy:HH:mm:ss").format(new Date());
 		List<String>args = Arrays.asList(new String[]{"commit",fidarg, msg});
-		String stdout =  executeCommand(new File(repoPath),geogigCLIExec,args);
+		String stdout =  executeCommand(geogigCLIExec,args,repoPath);
 		return extractCommitID(stdout);
 	}
 	private String extractCommitID(String commitStdOut){
@@ -172,7 +172,7 @@ public class GeogigCLIService {
 	     }
 	     return out;
 	}
-	private String executeCommand(File processPath, String command, List<String>arguments) {
+	private String executeCommand( String command, List<String>arguments,String repoPath) {
 		//PrintResultHandler resultHandler = null;
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		CommandLine cmdLine = new CommandLine(command);
@@ -180,10 +180,12 @@ public class GeogigCLIService {
 		while (it.hasNext()){
 			cmdLine.addArgument(it.next(),false);
 		}
+		cmdLine.addArgument("--repo",false);
+		cmdLine.addArgument(repoPath,true);
 		DefaultExecutor executor = new DefaultExecutor();
 		//executor.setExitValue(255);
 		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
-		executor.setWorkingDirectory(processPath);
+		executor.setWorkingDirectory(new File(System.getProperty("user.home")));
 		ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
 		executor.setWatchdog(watchdog);
 		try {
