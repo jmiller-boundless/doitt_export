@@ -44,7 +44,7 @@
         <se:Rule>
           <se:Name>Class I</se:Name>
           <se:Description>
-            <se:Title>Class I</se:Title>
+            <se:Title>Physically Protected Path</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -70,7 +70,7 @@
         <se:Rule>
           <se:Name>Class II</se:Name>
           <se:Description>
-            <se:Title>Class II</se:Title>
+            <se:Title>Bike Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -96,7 +96,7 @@
         <se:Rule>
           <se:Name>Class III</se:Name>
           <se:Description>
-            <se:Title>Class III</se:Title>
+            <se:Title>Shared Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -174,7 +174,7 @@
         <se:Rule>
           <se:Name>Class I,II</se:Name>
           <se:Description>
-            <se:Title>Class I,II</se:Title>
+            <se:Title>Protected Path and Bike Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -209,7 +209,7 @@
         <se:Rule>
           <se:Name>Class I,III</se:Name>
           <se:Description>
-            <se:Title>Class I,III</se:Title>
+            <se:Title>Protected Path and Shared Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -244,7 +244,7 @@
         <se:Rule>
           <se:Name>Class II,I</se:Name>
           <se:Description>
-            <se:Title>Class II,I</se:Title>
+            <se:Title>Bike Lane and Protected Path</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -279,7 +279,7 @@
         <se:Rule>
           <se:Name>Class III,I</se:Name>
           <se:Description>
-            <se:Title>Class III,I</se:Title>
+            <se:Title>Shared Lane and Protected Path</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -314,7 +314,7 @@
         <se:Rule>
           <se:Name>Class II,III</se:Name>
           <se:Description>
-            <se:Title>Class II,III</se:Title>
+            <se:Title>Bike Lane and Shared Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -349,7 +349,7 @@
         <se:Rule>
           <se:Name>Class I</se:Name>
           <se:Description>
-            <se:Title>Class I</se:Title>
+            <se:Title>Physically Protected Path</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -380,7 +380,7 @@
         <se:Rule>
           <se:Name>Class I</se:Name>
           <se:Description>
-            <se:Title>Class I</se:Title>
+            <se:Title>Physically Protected Path</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -411,7 +411,7 @@
         <se:Rule>
           <se:Name>Class II</se:Name>
           <se:Description>
-            <se:Title>Class II</se:Title>
+            <se:Title>Bike Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -442,7 +442,7 @@
         <se:Rule>
           <se:Name>Class II</se:Name>
           <se:Description>
-            <se:Title>Class II</se:Title>
+            <se:Title>Bike Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -473,7 +473,7 @@
         <se:Rule>
           <se:Name>Class III</se:Name>
           <se:Description>
-            <se:Title>Class III</se:Title>
+            <se:Title>Shared Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -504,7 +504,7 @@
         <se:Rule>
           <se:Name>Class III</se:Name>
           <se:Description>
-            <se:Title>Class III</se:Title>
+            <se:Title>Shared Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -597,7 +597,7 @@
         <se:Rule>
           <se:Name>Class III,II</se:Name>
           <se:Description>
-            <se:Title>Class III,II</se:Title>
+            <se:Title>Shared Lane and Bike Lane</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
