@@ -380,7 +380,7 @@ public class ProcessShapefile {
 	private CoordinateReferenceSystem getTargetCRS() {
 		 CoordinateReferenceSystem crsout = null;
 		try {
-			crsout=CRS.decode("EPSG:4326");
+			crsout=CRS.decode("EPSG:3857");
 		} catch (NoSuchAuthorityCodeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
