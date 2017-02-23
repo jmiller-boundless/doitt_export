@@ -30,9 +30,11 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -80,19 +82,12 @@ public class FileMonitorJob implements Job {
 	public void execute(JobExecutionContext jobExecutionContext) {
 		System.out.println("Quartz Job");
 		log.info("repo id from gras get: "+gras.getRepoID());
-		//AWSSecurityTokenServiceClient sts_client = new AWSSecurityTokenServiceClient();
-		//GetSessionTokenRequest session_token_request = new GetSessionTokenRequest();
-		//session_token_request.setRequestCredentials(credentials);
-		//GetSessionTokenResult session_token_result = sts_client.getSessionToken(session_token_request);
-		//Credentials session_creds = session_token_result.getCredentials();
-		AWSCredentials credentials = new ProfileCredentialsProvider().getCredentials();
-		//BasicSessionCredentials basic_session_creds = new BasicSessionCredentials(
-		//		session_creds.getAccessKeyId(),
-		//		session_creds.getSecretAccessKey(),
-		//		session_creds.getSessionToken()
-				
-		//		);
-		s3client = new AmazonS3Client(credentials);
+
+		//AWSCredentials credentials = new ProfileCredentialsProvider().getCredentials();
+
+		//AWSCredentials credentials = new InstanceProfileCredentialsProvider().getCredentials();
+		//s3client = new AmazonS3Client(credentials);
+		s3client = AmazonS3ClientBuilder.defaultClient();
 		ObjectListing ol = s3client.listObjects(bucketname);
 		List<S3ObjectSummary> summaries = ol.getObjectSummaries();
 		Iterator<S3ObjectSummary> it = summaries.iterator();
