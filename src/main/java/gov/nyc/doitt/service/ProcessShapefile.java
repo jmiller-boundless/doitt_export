@@ -231,18 +231,9 @@ public class ProcessShapefile {
                     	
                     		
                     	if(property.getName().toString().equalsIgnoreCase("BikeLane")){
-                    		/* String clazzfromto="";
-                    		String clazztofrom="";
-                   		String[]clazzes = ((String)property.getValue()).split(",");
-                    		if(clazzes.length==1){
-                    			clazzfromto=clazzes[0];
-                    			clazztofrom=clazzes[0];
-                    		}else if(clazzes.length==2){
-                    			clazzfromto=clazzes[0];
-                    			clazztofrom=clazzes[1];
-                    		}*/
-                    		if(property.getValue()!=null){
-	                    		String[]clazzes = getPathClasses((String)property.getValue());
+
+                    		if(property.getValue()!=null&&feature.getProperty("BIKE_TRAFDIR")!=null){
+	                    		String[]clazzes = getPathClasses((String)property.getValue(),(String)feature.getProperty("BIKE_TRAFDIR").getValue());
 	                    		fbuilder.set(fromto, clazzes[0]);
 	                    		fbuilder.set(tofrom, clazzes[1]);
                     		}
@@ -290,44 +281,124 @@ public class ProcessShapefile {
 		return out;
 	}
 	
-	 private String[] getPathClasses(String value) {
+private String[] getPathClasses(String value, String trafdir) {
 		
 		String[]out = new String[2];
+		if(trafdir==null||trafdir.trim().equals("")){
+			out[0]="";
+			 out[1]="";
+			 return out;
+		}
 		 try{
 			 Integer clazz = Integer.valueOf(value);
-			 if(clazz==1){
-				 out[0]="1";
-				 out[1]="1";
-			 }else if (clazz==2){
-				 out[0]="2";
-				 out[1]="2";
-			 }else if (clazz==3){
-				 out[0]="3";
-				 out[1]="3";
-			 }else if (clazz==4){
-				 out[0]="4";
-				 out[1]="4";
-			 }else if (clazz==5){
-				 out[0]="1";
-				 out[1]="2";
-			 }else if (clazz==6){
-				 out[0]="2";
-				 out[1]="3";
-			 }else if (clazz==7){
-				 out[0]="7";
-				 out[1]="7";
-			 }else if (clazz==8){
-				 out[0]="1";
-				 out[1]="3";
-			 }else if (clazz==9){
-				 out[0]="2";
-				 out[1]="1";
-			 }else if (clazz==10){
-				 out[0]="3";
-				 out[1]="1";
-			 }else if (clazz==11){
-				 out[0]="3";
-				 out[1]="2";
+			 if(trafdir.equalsIgnoreCase("TW")){
+				 if(clazz==1){
+					 out[0]="1";
+					 out[1]="1";
+				 }else if (clazz==2){
+					 out[0]="2";
+					 out[1]="2";
+				 }else if (clazz==3){
+					 out[0]="3";
+					 out[1]="3";
+				 }else if (clazz==4){
+					 out[0]="4";
+					 out[1]="4";
+				 }else if (clazz==5){
+					 out[0]="1";
+					 out[1]="2";
+				 }else if (clazz==6){
+					 out[0]="2";
+					 out[1]="3";
+				 }else if (clazz==7){
+					 out[0]="7";
+					 out[1]="7";
+				 }else if (clazz==8){
+					 out[0]="1";
+					 out[1]="3";
+				 }else if (clazz==9){
+					 out[0]="2";
+					 out[1]="1";
+				 }else if (clazz==10){
+					 out[0]="3";
+					 out[1]="1";
+				 }else if (clazz==11){
+					 out[0]="3";
+					 out[1]="2";
+				 }
+			 }else if(trafdir.equalsIgnoreCase("FT")){
+				 if(clazz==1){
+					 out[0]="1";
+					 out[1]="";
+				 }else if (clazz==2){
+					 out[0]="2";
+					 out[1]="";
+				 }else if (clazz==3){
+					 out[0]="3";
+					 out[1]="";
+				 }else if (clazz==4){
+					 out[0]="4";
+					 out[1]="";
+				 }else if (clazz==5){
+					 out[0]="1";
+					 out[1]="2";
+				 }else if (clazz==6){
+					 out[0]="2";
+					 out[1]="3";
+				 }else if (clazz==7){
+					 out[0]="7";
+					 out[1]="7";
+				 }else if (clazz==8){
+					 out[0]="1";
+					 out[1]="3";
+				 }else if (clazz==9){
+					 out[0]="2";
+					 out[1]="1";
+				 }else if (clazz==10){
+					 out[0]="3";
+					 out[1]="1";
+				 }else if (clazz==11){
+					 out[0]="3";
+					 out[1]="2";
+				 }
+			 }else if(trafdir.equalsIgnoreCase("TF")){
+					 if(clazz==1){
+						 out[0]="";
+						 out[1]="1";
+					 }else if (clazz==2){
+						 out[0]="";
+						 out[1]="2";
+					 }else if (clazz==3){
+						 out[0]="";
+						 out[1]="3";
+					 }else if (clazz==4){
+						 out[0]="";
+						 out[1]="4";
+					 }else if (clazz==5){
+						 out[0]="1";
+						 out[1]="2";
+					 }else if (clazz==6){
+						 out[0]="2";
+						 out[1]="3";
+					 }else if (clazz==7){
+						 out[0]="7";
+						 out[1]="7";
+					 }else if (clazz==8){
+						 out[0]="1";
+						 out[1]="3";
+					 }else if (clazz==9){
+						 out[0]="2";
+						 out[1]="1";
+					 }else if (clazz==10){
+						 out[0]="3";
+						 out[1]="1";
+					 }else if (clazz==11){
+						 out[0]="3";
+						 out[1]="2";
+					 }
+			 }else{
+				 out[0]="";
+				 out[1]="";
 			 }
 		 }catch(NumberFormatException nfe){
 			 out[0]="";
