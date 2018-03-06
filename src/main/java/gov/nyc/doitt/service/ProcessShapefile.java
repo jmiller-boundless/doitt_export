@@ -23,6 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
@@ -116,7 +117,10 @@ public class ProcessShapefile {
 		FeatureCollection<SimpleFeatureType, SimpleFeature> out = null;
 		try {
 			URL unzippedShp = unzipShapeFile(shapeZipIn);
-			params.put(ShapefileDataStoreFactory.URLP.key, unzippedShp);
+			//Call Ogr2Ogr here
+			URL reprojShp = reprojWithOgr(unzippedShp);
+			//end call to Ogr2Ogr
+			params.put(ShapefileDataStoreFactory.URLP.key, reprojShp);
 			params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);
 			params.put(ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX.key, Boolean.FALSE);
 			ShapefileDataStore dataStore = (ShapefileDataStore) factory.createDataStore(params);
@@ -140,6 +144,17 @@ public class ProcessShapefile {
 	}
 	
 	
+	private URL reprojWithOgr(URL unzippedShp) throws MalformedURLException {
+		//ogr2ogr -t_srs EPSG:3857 3857_ogr/bikepath.shp bikepath.shp
+		String outpath = FilenameUtils.getPath(unzippedShp.getFile());
+		String outfile = outpath+"bikepathreproj.shp";
+		String[] cmd = {"-t_srs", "EPSG:3857", "3857", outfile,unzippedShp.getFile()};
+
+		Ogr2ogr.main(cmd);
+		File ofile = new File(outfile);
+		return ofile.toURI().toURL();
+	}
+
 	public int featureCount(File diffout) {
 		int out=0;
 
@@ -197,15 +212,15 @@ public class ProcessShapefile {
 			}
             CoordinateReferenceSystem worldCRS = getTargetCRS();
             CoordinateReferenceSystem dataCRS = existingFeatureType.getCoordinateReferenceSystem();
-            SimpleFeatureType reprojFeatureType = SimpleFeatureTypeBuilder.retype(existingFeatureType, worldCRS);
-            for (AttributeDescriptor descriptor : reprojFeatureType.getAttributeDescriptors()) {
+            //SimpleFeatureType reprojFeatureType = SimpleFeatureTypeBuilder.retype(existingFeatureType, worldCRS);
+            for (AttributeDescriptor descriptor : existingFeatureType.getAttributeDescriptors()) {
             	if(!descriptor.getLocalName().equalsIgnoreCase("BikeLane"))
             		builder.add(descriptor);
             }
 
-            builder.setName(reprojFeatureType.getName());
-            builder.setCRS(reprojFeatureType.getCoordinateReferenceSystem());
-            reprojFeatureType = builder.buildFeatureType();
+            builder.setName(existingFeatureType.getName());
+            builder.setCRS(existingFeatureType.getCoordinateReferenceSystem());
+            SimpleFeatureType reprojFeatureType = builder.buildFeatureType();
 			dataStore.createSchema(reprojFeatureType);
 			final String typeName = dataStore.getTypeNames()[0];
             final SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
@@ -223,10 +238,10 @@ public class ProcessShapefile {
                 SimpleFeature feature = existingfeatures.next();
                 for (Property property : feature.getProperties()) {
                     if (property instanceof GeometryAttribute) {
-                    	Geometry geometry = (Geometry) property.getValue();
-                    	Geometry geometry2 = JTS.transform(geometry, transform);
-                        fbuilder.set(existingFeatureType.getGeometryDescriptor().getName(),
-                                geometry2);
+                    	//Geometry geometry = (Geometry) property.getValue();
+                    	//Geometry geometry2 = JTS.transform(geometry, transform);
+                        //fbuilder.set(existingFeatureType.getGeometryDescriptor().getName(),
+                        //        geometry2);
                     } else {
                     	
                     		
@@ -273,11 +288,12 @@ public class ProcessShapefile {
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
 			es.send(e.getLocalizedMessage());
-		} catch (TransformException e) {
+		} 
+ /* catch (TransformException e) {
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
 			es.send(e.getLocalizedMessage());
-		}
+		}*/
 		return out;
 	}
 	

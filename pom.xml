@@ -175,6 +175,11 @@
                     	</exclusion>
                     </exclusions>
         </dependency>
+        <dependency>
+		   <groupId>org.gdal</groupId>
+		   <artifactId>gdal</artifactId>
+		   <version>1.11.2</version>
+		</dependency>
 	</dependencies>
 	
 	<build>
