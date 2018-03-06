@@ -1,7 +1,7 @@
 package gov.nyc.doitt.service;
 
 /******************************************************************************
- * $Id: ogr2ogr.java 35222 2016-08-28 06:06:11Z goatbar $
+ * $Id$
  *
  * Project:  OpenGIS Simple Features Reference Implementation
  * Purpose:  Java port of a simple client for translating between formats.
@@ -76,7 +76,7 @@ class GDALScaledProgress extends ProgressCallback
 };
 
 
-public class Ogr2ogr
+public class ogr2ogr
 {
     static boolean bSkipFailures = false;
     static int nGroupTransactions = 200;

@@ -117,9 +117,9 @@ public class ProcessShapefile {
 		FeatureCollection<SimpleFeatureType, SimpleFeature> out = null;
 		try {
 			URL unzippedShp = unzipShapeFile(shapeZipIn);
-			//Call Ogr2Ogr here
+			//Call ogr2Ogr here
 			URL reprojShp = reprojWithOgr(unzippedShp);
-			//end call to Ogr2Ogr
+			//end call to ogr2Ogr
 			params.put(ShapefileDataStoreFactory.URLP.key, reprojShp);
 			params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);
 			params.put(ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX.key, Boolean.FALSE);
@@ -142,15 +142,14 @@ public class ProcessShapefile {
 
 		return out;
 	}
-	
-	
+
 	private URL reprojWithOgr(URL unzippedShp) throws MalformedURLException {
-		//ogr2ogr -t_srs EPSG:3857 3857_ogr/bikepath.shp bikepath.shp
+		//ogr2ogr -t_srs EPSG:3857 /out/path/bikepath.shp /in/path/bikepath.shp
 		String outpath = FilenameUtils.getPath(unzippedShp.getFile());
 		String outfile = outpath+"bikepathreproj.shp";
-		String[] cmd = {"-t_srs", "EPSG:3857", "3857", outfile,unzippedShp.getFile()};
+		String[] cmd = {"-t_srs", "EPSG:3857", outfile, unzippedShp.getFile()};
 
-		Ogr2ogr.main(cmd);
+		ogr2ogr.main(cmd);
 		File ofile = new File(outfile);
 		return ofile.toURI().toURL();
 	}
