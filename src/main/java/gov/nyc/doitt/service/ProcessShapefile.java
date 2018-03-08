@@ -23,6 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
@@ -55,6 +56,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -65,6 +67,8 @@ public class ProcessShapefile {
 	private EmailService es;
 	@Autowired
 	private NodeIntersectionDAO nid;
+	 @Value("#{'${requiredColumns}'.split(',')}") 
+	 private List<String> requiredColumns;
 	
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final String fromto="fromTocl";
@@ -246,8 +250,8 @@ public class ProcessShapefile {
                     		
                     	if(property.getName().toString().equalsIgnoreCase("BikeLane")){
 
-                    		if(property.getValue()!=null&&feature.getProperty("BIKE_TRAFDIR")!=null){
-	                    		String[]clazzes = getPathClasses((String)property.getValue(),(String)feature.getProperty("BIKE_TRAFDIR").getValue());
+                    		if(property.getValue()!=null&&feature.getProperty("BIKE_TRAFD")!=null){
+	                    		String[]clazzes = getPathClasses((String)property.getValue(),(String)feature.getProperty("BIKE_TRAFD").getValue());
 	                    		fbuilder.set(fromto, clazzes[0]);
 	                    		fbuilder.set(tofrom, clazzes[1]);
                     		}
@@ -535,6 +539,71 @@ private String[] getPathClasses(String value, String trafdir) {
 	    builder.setCRS(featureType.getCoordinateReferenceSystem());
 	    featureType = builder.buildFeatureType();
 	    return featureType;
+	}
+
+	public boolean shapefileValidated(File fieldscombinedZip) {
+		boolean out = true;
+		final HashMap<String, Serializable> params = new HashMap<>(3);
+		final ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
+		try {
+			URL unzippedShp = unzipShapeFile(fieldscombinedZip);
+			//Call ogr2Ogr here
+			URL reprojShp = reprojWithOgr(unzippedShp);
+			//end call to ogr2Ogr
+			params.put(ShapefileDataStoreFactory.URLP.key, reprojShp);
+			params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);
+			params.put(ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX.key, Boolean.FALSE);
+			ShapefileDataStore dataStore = (ShapefileDataStore) factory.createDataStore(params);
+			String typeName = dataStore.getTypeNames()[0];
+			SimpleFeatureType sft = dataStore.getSchema();
+			List<String>additionalColumns = containsAllRequired(sft,requiredColumns);
+			List<String>missingColumns = containsOnlyRequired(sft,requiredColumns);
+			if(additionalColumns.size()!=0) {
+				out=false;
+				es.send("The following columns were found that do not match the schema: "+StringUtils.join(additionalColumns, ','));
+			}
+			if(missingColumns.size()!=0) {
+				out=false;
+				es.send("The following required columns are missing: "+StringUtils.join(missingColumns, ','));
+			}
+
+		} catch (IOException e) {
+			out=false;
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
+		}catch (Exception e){
+			out=false;
+			e.printStackTrace();
+			log.error(e.getLocalizedMessage());
+			es.send(e.getLocalizedMessage());
+		}
+
+		return out;
+
+	}
+
+	private List<String> containsAllRequired(SimpleFeatureType sft, List<String> requiredColumns2) {
+		List<String>out = new ArrayList<String>();
+		for(String reqcol:requiredColumns2) {
+			if(sft.getDescriptor(reqcol)==null)
+				out.add(reqcol);
+		}
+		
+		return out;
+
+
+	}
+
+	private List<String> containsOnlyRequired(SimpleFeatureType sft, List<String> requiredColumns2) {
+		List<String>out = new ArrayList<String>();
+		List<AttributeDescriptor>shapefileatts = sft.getAttributeDescriptors();
+		for(AttributeDescriptor att:shapefileatts) {
+			if(!requiredColumns2.contains(att.getLocalName()))
+				out.add(att.getLocalName());
+			
+		}
+		return out;
 	}
 	
 
