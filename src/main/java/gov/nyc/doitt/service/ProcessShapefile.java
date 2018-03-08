@@ -241,10 +241,10 @@ public class ProcessShapefile {
                 SimpleFeature feature = existingfeatures.next();
                 for (Property property : feature.getProperties()) {
                     if (property instanceof GeometryAttribute) {
-                    	//Geometry geometry = (Geometry) property.getValue();
+                    	Geometry geometry = (Geometry) property.getValue();
                     	//Geometry geometry2 = JTS.transform(geometry, transform);
-                        //fbuilder.set(existingFeatureType.getGeometryDescriptor().getName(),
-                        //        geometry2);
+                        fbuilder.set(existingFeatureType.getGeometryDescriptor().getName(),
+                               geometry);
                     } else {
                     	
                     		
