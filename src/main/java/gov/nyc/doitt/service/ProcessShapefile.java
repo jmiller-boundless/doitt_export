@@ -560,11 +560,15 @@ private String[] getPathClasses(String value, String trafdir) {
 			List<String>missingColumns = containsOnlyRequired(sft,requiredColumns);
 			if(additionalColumns.size()!=0) {
 				out=false;
-				es.send("The following columns were found that do not match the schema: "+StringUtils.join(additionalColumns, ','));
+				String additional = StringUtils.join(additionalColumns, ',');
+				es.send("The following columns were found that do not match the schema: "+additional);
+				log.debug("The following columns were found that do not match the schema: "+additional);
 			}
 			if(missingColumns.size()!=0) {
 				out=false;
-				es.send("The following required columns are missing: "+StringUtils.join(missingColumns, ','));
+				String missing = StringUtils.join(missingColumns, ',');
+				es.send("The following required columns are missing: "+missing);
+				log.debug("The following required columns are missing: "+missing);
 			}
 
 		} catch (IOException e) {
