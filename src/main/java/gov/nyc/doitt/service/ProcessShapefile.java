@@ -250,8 +250,8 @@ public class ProcessShapefile {
                     		
                     	if(property.getName().toString().equalsIgnoreCase("BikeLane")){
 
-                    		if(property.getValue()!=null&&feature.getProperty("BIKE_TRAFDIR")!=null){
-	                    		String[]clazzes = getPathClasses((String)property.getValue(),(String)feature.getProperty("BIKE_TRAFDIR").getValue());
+                    		if(property.getValue()!=null&&feature.getProperty("BIKE_TRAFD")!=null){
+	                    		String[]clazzes = getPathClasses((String)property.getValue(),(String)feature.getProperty("BIKE_TRAFD").getValue());
 	                    		fbuilder.set(fromto, clazzes[0]);
 	                    		fbuilder.set(tofrom, clazzes[1]);
                     		}
