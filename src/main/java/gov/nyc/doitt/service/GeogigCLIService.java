@@ -186,7 +186,7 @@ public class GeogigCLIService {
 		//executor.setExitValue(255);
 		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
 		executor.setWorkingDirectory(new File(System.getProperty("user.home")));
-		ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
+		ExecuteWatchdog watchdog = new ExecuteWatchdog(600000);
 		executor.setWatchdog(watchdog);
 		try {
 			System.out.println(cmdLine.toString());
