@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
@@ -98,36 +99,62 @@ public class FileMonitorJob implements Job {
 
 		//bikepath find and process start
 		ObjectMetadata om = s3client.getObjectMetadata(bucketname, filekey);
+		File fieldscombinedZip = null;
+		File fieldssplitShape=null;
 		if(fms.isNewestRev(om.getLastModified(), filekey)){
-			fms.saveRev(om.getLastModified(), filekey);
-			log.info("New file found with last modified "+om.getLastModified());
-			File fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
-			if(psf.shapefileValidated(fieldscombinedZip)) {
-				File fieldssplitShape = psf.processZipShape(fieldscombinedZip,"bikepathtemp","bikepath.shp",true,false);
-				String newcommitId = gcs.loadFile(fieldssplitShape,gcs.getVersionRepoPath(),gcs.fid);
-				List<String>commitids = gcs.getCommitIds(gcs.getVersionRepoPath(),2);
-				if(commitids.size()>1){
-					try{
-						String previouscommitid = commitids.get(1);
-						List<String>removed = gcs.getRemovedFeatureIds(gcs.getVersionRepoPath(),newcommitId,previouscommitid,gcs.gigPath);
-						gras.removeFeatures(removed,gras.geoserverURL,gras.getRepoID(),gras.path);
-						File diffout = gcs.getDiffShapefile(gcs.getVersionRepoPath(),newcommitId,previouscommitid,gcs.gigPath,"bikepath");
-						String importout="";
-						if(diffout!=null){
-							importout = gras.importZip(diffout,gras.geoserverURL,gras.getRepoID(),gras.fid,gras.path,gras.author,gras.email,"diff");
+			try {
+				fms.saveRev(om.getLastModified(), filekey);
+				log.info("New file found with last modified "+om.getLastModified());
+				fieldscombinedZip = downloadS3File(s3client,bucketname,filekey);
+				if(psf.shapefileValidated(fieldscombinedZip)) {
+					fieldssplitShape = psf.processZipShape(fieldscombinedZip,"bikepathtemp","bikepath.shp",true,false);
+					String newcommitId = gcs.loadFile(fieldssplitShape,gcs.getVersionRepoPath(),gcs.fid);
+					List<String>commitids = gcs.getCommitIds(gcs.getVersionRepoPath(),2);
+					if(commitids.size()>1){
+						try{
+							String previouscommitid = commitids.get(1);
+							List<String>removed = gcs.getRemovedFeatureIds(gcs.getVersionRepoPath(),newcommitId,previouscommitid,gcs.gigPath);
+							gras.removeFeatures(removed,gras.geoserverURL,gras.getRepoID(),gras.path);
+							File diffout = gcs.getDiffShapefile(gcs.getVersionRepoPath(),newcommitId,previouscommitid,gcs.gigPath,"bikepath");
+							String importout="";
+							if(diffout!=null){
+								importout = gras.importZip(diffout,gras.geoserverURL,gras.getRepoID(),gras.fid,gras.path,gras.author,gras.email,"diff");
+							}
+							else{
+								importout = "No bikepath feature changes found or only features removed";
+							}
+							es.send(importout);
+						}finally{
+							//gcs.deleteLock(gcs.getVersionRepoPath() + File.separator+".geogig"+File.separator+"objects"+File.separator+"je.lck");
 						}
-						else{
-							importout = "No bikepath feature changes found or only features removed";
-						}
-						es.send(importout);
-					}finally{
-						//gcs.deleteLock(gcs.getVersionRepoPath() + File.separator+".geogig"+File.separator+"objects"+File.separator+"je.lck");
+					}else{
+						es.send("Only " +commitids.size() + " commits found, not enough to run difference");
 					}
-				}else{
-					es.send("Only " +commitids.size() + " commits found, not enough to run difference");
 				}
+		
+			}finally {
+				try {
+					if(fieldscombinedZip!=null) {
+						boolean result = Files.deleteIfExists(fieldscombinedZip.toPath());
+						
+					}
+					if(fieldssplitShape!=null) {
+						boolean result2 = Files.deleteIfExists(fieldssplitShape.toPath());
+					}
+					if(psf.getUnzippedShp()!=null) {
+						File uzs = new File(psf.getUnzippedShp().toURI());
+						boolean result3 = Files.deleteIfExists(uzs.toPath());
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
-		}
+
 		//bikepath find and process end
 		
 		//building find and process start

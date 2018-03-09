@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -77,6 +78,12 @@ public class ProcessShapefile {
 	//private final String tofrom_nodeid = "toFromNode";
 	private final String fromto_hr = "fromToHR";
 	private final String tofrom_hr = "toFromHR";
+	private URL unzippedShp = null;
+	
+	public URL getUnzippedShp() {
+		return unzippedShp;
+	}
+
 	public File processZipShape(File shapeZipIn, String tempDirName, String filename,Boolean fieldsplit, Boolean populateintersection){
 		Path zipfile = null;
 		File shpfile = null;
@@ -120,7 +127,7 @@ public class ProcessShapefile {
 		final ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
 		FeatureCollection<SimpleFeatureType, SimpleFeature> out = null;
 		try {
-			URL unzippedShp = unzipShapeFile(shapeZipIn);
+			unzippedShp = unzipShapeFile(shapeZipIn);
 			//Call ogr2Ogr here
 			URL reprojShp = reprojWithOgr(unzippedShp);
 			//end call to ogr2Ogr
@@ -545,8 +552,9 @@ private String[] getPathClasses(String value, String trafdir) {
 		boolean out = true;
 		final HashMap<String, Serializable> params = new HashMap<>(3);
 		final ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
+		URL unzippedShp = null;
 		try {
-			URL unzippedShp = unzipShapeFile(fieldscombinedZip);
+			unzippedShp = unzipShapeFile(fieldscombinedZip);
 			//Call ogr2Ogr here
 			URL reprojShp = reprojWithOgr(unzippedShp);
 			//end call to ogr2Ogr
@@ -581,6 +589,19 @@ private String[] getPathClasses(String value, String trafdir) {
 			e.printStackTrace();
 			log.error(e.getLocalizedMessage());
 			es.send(e.getLocalizedMessage());
+		}finally {
+			try {
+				if(unzippedShp!=null) {
+					File f = new File(unzippedShp.toURI());
+					boolean result = Files.deleteIfExists(f.toPath());
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		return out;
